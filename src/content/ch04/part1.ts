@@ -284,7 +284,7 @@ const lessons: Lesson[] = [
       {
         kind: "read",
         title: "Day 0: setup and baseline",
-        body: "**Goal:** working accounts, PyPy on your machine, a tested `template.py`, and honest baseline numbers written down.\n\nDay 0 is not a learning day. You build the workbench and measure where you start. This lesson is the workbench. The next lesson is the **baseline**: a timed test of your starting level.\n\nThe baseline only matters if it is honest. No AI, no hints, no editorials until the score is written.",
+        body: "Day 0 is not a learning day. You build the workbench and measure where you start. This lesson is the workbench. The next lesson is the **baseline**: a timed test of your starting level.\n\nThe baseline only matters if it is honest. No AI, no hints, no editorials until the score is written.",
         visual: {
           kind: "table",
           headers: ["Time", "Task"],
@@ -567,7 +567,7 @@ const lessons: Lesson[] = [
       {
         kind: "read",
         title: "Read the bottom first",
-        body: "**Goal:** read the constraints first, name the target complexity in 5 seconds, and use a hash map or set to kill an O(n²) scan.\n\nMost beginners read the story, write a double loop, and get **[[TLE]]** (time limit exceeded). Today you learn to look at n before anything else. Then you learn the most common fix for a slow loop: a hash lookup.",
+        body: "Most beginners read the story, write a double loop, and get **[[TLE]]** (time limit exceeded). Today you learn to look at n before anything else. Then you learn the most common fix for a slow loop: a hash lookup.",
       },
       {
         kind: "read",
@@ -956,7 +956,7 @@ const lessons: Lesson[] = [
       {
         kind: "read",
         title: "Two fingers on one array",
-        body: "**Goal:** see \"sorted\" or \"can be sorted\" and reach for two pointers; write the 3Sum duplicate-skip from memory.\n\nYesterday a hash map removed the inner loop. Today a different trick does it on a **sorted** array: two indexes that move toward each other, and each move throws away an element for good.",
+        body: "Yesterday a hash map removed the inner loop. Today a different trick does it on a **sorted** array: two indexes that move toward each other, and each move throws away an element for good.",
       },
       {
         kind: "quiz",
@@ -1283,7 +1283,7 @@ const lessons: Lesson[] = [
       {
         kind: "read",
         title: "A window that only moves forward",
-        body: "**Goal:** write the variable-size window (grow right, shrink left) without thinking, and know when a window does **not** work.\n\nMany problems ask for the longest or shortest **[[subarray]]** (a run of neighbouring elements) or **[[substring]]** with some rule. Checking every start and end is O(n²). The window does it in one pass.",
+        body: "Many problems ask for the longest or shortest **[[subarray]]** (a run of neighbouring elements) or **[[substring]]** with some rule. Checking every start and end is O(n²). The window does it in one pass.",
       },
       {
         kind: "quiz",

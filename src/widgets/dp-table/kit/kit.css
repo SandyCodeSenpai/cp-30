@@ -5,7 +5,7 @@
 .dk-left { display: flex; flex-direction: column; gap: 12px; min-width: 0; }
 .dk-right { min-width: 0; }
 @container (min-width: 860px) {
-  .dk-grid { grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr); gap: 16px; }
+  .dk-grid { grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr); gap: 16px; }
   .dk-right { position: sticky; top: 72px; }
 }
 

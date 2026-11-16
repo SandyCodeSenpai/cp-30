@@ -215,7 +215,7 @@ export function bfsFrames(g: Grid, mode: "bfs" | "multi-source"): GridFrame[] {
       if (pops <= 2 || pops % 5 === 0) frames[popAt].ask = {
         q: `${rc(g, u)} has dist ${d}. What dist do its new neighbours get?`,
         options: [`${d}`, `${d + 1}`, `${d + 2}`], answer: 1,
-        why: `Every step costs 1, so a neighbour found from a dist-${d} cell is ${d + 1} steps away.`,
+        why: `Every step costs 1, so a neighbour found from a dist-${d} cell is ${d + 1} step${d + 1 === 1 ? "" : "s"} away.`,
       };
     } else {
       snap({ line: 16, cur: u, say: `No new neighbours: ${skip || "nothing around"}.` });

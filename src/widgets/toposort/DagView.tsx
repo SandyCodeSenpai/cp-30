@@ -42,7 +42,7 @@ export function DagView({ g, edges, frame, frameKey, showIndeg, dfs }: { g: GLay
               </g>
             )}
             {rk !== null && (
-              <motion.text key={`r${rk}`} className="tp-rank" y={NR + 16} textAnchor="middle" initial={reduce ? false : { opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.25 }}>#{rk}</motion.text>
+              <motion.text key={`r${rk}`} className="tp-rank" x={g.horizontal ? 0 : -NR - 8} y={g.horizontal ? NR + 16 : 4} textAnchor={g.horizontal ? "middle" : "end"} initial={reduce ? false : { opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.25 }}>#{rk}</motion.text>
             )}
           </g>
         );

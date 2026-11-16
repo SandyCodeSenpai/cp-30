@@ -70,8 +70,8 @@ function CmpView({ f, a, vals, stepKey }: { f: CmpFrame; a: number[]; vals: numb
   const W = padL + n * cw + 4;
   const aY = 22, aH = 34, rY = aY + aH + 6, rH = 26;
   const vY = rY + rH + 74, vH = 34;
-  const cY = vY + vH + 22, barMax = 40;
-  const H = cY + barMax + 24;
+  const cY = vY + vH + 38, barMax = 40;
+  const H = cY + barMax + 10;
   const ax = (i: number) => padL + (i + 0.5) * cw;
   const vx0 = padL + ((n - k) * cw) / 2;
   const vx = (j: number) => vx0 + (j + 0.5) * cw;           // j = rank - 1
@@ -93,9 +93,9 @@ function CmpView({ f, a, vals, stepKey }: { f: CmpFrame; a: number[]; vals: numb
 
           {/* faint flows from first occurrences to the sorted list (stage 2+) */}
           {f.stage >= 2 && !inLoop && a.map((v, i) => {
-            if (f.dup[i]) return null;
-            const j = vals.indexOf(v);
-            return <motion.path key={`fl${i}`} d={`M${ax(i)},${aY + aH} C${ax(i)},${vY - 30} ${vx(j)},${aY + aH + 40} ${vx(j)},${vY}`} className="cp-flow"
+            if (f.dup[i] && !f.done) return null;
+            const j = vals.indexOf(v), y1 = f.done ? rY + rH : aY + aH;
+            return <motion.path key={`fl${i}${f.done ? "d" : ""}`} d={`M${ax(i)},${y1} C${ax(i)},${vY - 30} ${vx(j)},${y1 + 40} ${vx(j)},${vY}`} className="cp-flow"
               initial={reduce ? false : { pathLength: 0, opacity: 0 }} animate={{ pathLength: 1, opacity: 1 }} transition={{ duration: 0.6, delay: reduce ? 0 : i * 0.05 }} />;
           })}
           {/* current flow */}

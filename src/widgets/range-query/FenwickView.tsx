@@ -9,15 +9,15 @@ export function FenwickView({ f, n, stepKey }: { f: FwFrame; n: number; stepKey:
   const box = useRef<HTMLDivElement>(null);
   const width = useWidth(box) || 600;
   const reduce = useReducedMotion();
-  const padL = 34, padR = 40;
-  const cw = Math.max(34, Math.min(64, Math.floor((width - padL - padR) / n)));
+  const padL = width < 420 ? 36 : 44, padR = 30;
+  const cw = Math.max(30, Math.min(64, Math.floor((width - padL - padR) / n)));
   const W = padL + n * cw + padR;
   const levels = Math.floor(Math.log2(n)) + 1;
   const arcH = 56, y0 = arcH;               // index row starts here
   const aY = y0 + 40, aH = 34;
   const barsY = aY + aH + 14, LH = 34, BH = 27;
   const H = barsY + levels * LH + 2;
-  const xc = (k: number) => (k <= 0 ? padL - 14 : k > n ? padL + n * cw + 22 : padL + (k - 0.5) * cw);
+  const xc = (k: number) => (k <= 0 ? padL - 12 : k > n ? padL + n * cw + 22 : padL + (k - 0.5) * cw);
 
   const plus = new Set(f.plus), minus = new Set(f.minus), changed = new Set(f.changed), trail = new Set(f.trail);
   const active = f.trail.length > 0 || f.plus.length > 0 || f.minus.length > 0;
@@ -38,7 +38,8 @@ export function FenwickView({ f, n, stepKey }: { f: FwFrame; n: number; stepKey:
   const arcPath = (a: number, b: number) => {
     const x1 = xc(a), x2 = xc(b), dx = Math.abs(x2 - x1);
     const top = y0 - 6 - Math.min(arcH - 18, 14 + dx * 0.28);
-    return { d: `M${x1},${y0 - 4} C${x1},${top} ${x2},${top} ${x2},${y0 - 6}`, mx: (x1 + x2) / 2, my: top + (y0 - 4 - top) * 0.25 };
+    const apex = y0 - 4 + 0.75 * (top - (y0 - 4));
+    return { d: `M${x1},${y0 - 4} C${x1},${top} ${x2},${top} ${x2},${y0 - 6}`, mx: (x1 + x2) / 2, my: apex - 12 };
   };
 
   return (

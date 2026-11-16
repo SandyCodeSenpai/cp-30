@@ -9,7 +9,8 @@
 .rt-boardwrap { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 12px 24px; padding: 8px 14px 0; }
 .rt-sets { display: flex; flex-direction: column; gap: 6px; flex: 1 1 200px; max-width: 320px; min-width: 0; }
 .rt-setnote { margin: 2px 0 0; font-size: 13px; line-height: 18px; color: var(--muted); text-wrap: pretty; }
-.rt-treewrap { min-width: 0; }
+.rt-treewrap { position: relative; min-width: 0; }
+.rt-hint { position: absolute; left: 50%; top: 96px; transform: translateX(-50%); max-width: calc(100% - 32px); text-align: center; font-size: 14px; line-height: 20px; color: var(--muted); pointer-events: none; text-wrap: balance; }
 
 /* tree */
 .rt-edge path:first-child { fill: none; stroke: var(--muted); stroke-width: 1.5; transition: stroke var(--dur) var(--ease-color), stroke-width var(--dur) var(--ease-color); }

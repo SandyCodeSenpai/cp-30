@@ -36,12 +36,12 @@ export function GridView({ g, mode, f, brush, onEdit, reduce }: {
       if (d.value && !has && w.sources.length < LIMITS.maxSources) { const block = w.block.slice(); block[cell] = false; next = { ...w, block, sources: [...w.sources, cell] }; }
       else if (!d.value && has && w.sources.length > 1) next = { ...w, sources: w.sources.filter((s) => s !== cell) };
     } else if (d.kind === "move-s") {
-      if (w.target === cell || w.sources.includes(cell)) return;
-      const block = w.block.slice(); block[cell] = false; next = { ...w, block, sources: w.sources.map((s) => (s === d.from ? cell : s)) };
+      if (w.target === cell || w.sources.includes(cell) || w.block[cell]) return;
+      next = { ...w, sources: w.sources.map((s) => (s === d.from ? cell : s)) };
       d.from = cell;
     } else if (d.kind === "move-t") {
-      if (w.sources.includes(cell)) return;
-      const block = w.block.slice(); block[cell] = false; next = { ...w, block, target: cell };
+      if (w.sources.includes(cell) || w.block[cell]) return;
+      next = { ...w, target: cell };
     }
     if (next) { d.work = next; onEdit(next); }
   };
@@ -50,6 +50,7 @@ export function GridView({ g, mode, f, brush, onEdit, reduce }: {
     if (e.button !== 0 && e.pointerType === "mouse") return;
     const cell = cellAt(e); if (cell < 0) return;
     e.preventDefault();
+    (e.currentTarget.closest(".gx-lab") as HTMLElement | null)?.focus({ preventScroll: true });
     e.currentTarget.setPointerCapture?.(e.pointerId);
     let d: Drag;
     if (single && g.sources.includes(cell)) d = { kind: "move-s", value: true, from: cell, last: cell, work: g };

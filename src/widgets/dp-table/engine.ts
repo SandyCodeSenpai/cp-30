@@ -93,7 +93,7 @@ function stairs({ n }: Inputs["stairs"]): DPRun {
   b.push({ line: 6, answer: [0, n], sym: `return dp[${n}]`, num: `= ${d[n]}`, say: `dp[${n}] = ${d[n]}: there are ${d[n]} ways to climb ${n} steps. Each value reads only the two before it, so two variables would also work.` });
   return {
     spec: { rows: 1, cols: n + 1, colHeads: [{ name: "i", cells: idx(n + 1) }], rowHeads: [{ name: "", cells: ["dp"] }], base: [k(0, 0), k(0, 1)], blocked: [], arcs: true, tags: false },
-    frames: b.frames, code: STAIRS, title: "Climbing stairs (LC 70)", result: `${d[n]} ways`,
+    frames: b.frames, code: STAIRS, title: "Climbing stairs (LC 70)", result: `${d[n]} way${d[n] === 1 ? "" : "s"}`,
   };
 }
 
@@ -195,7 +195,7 @@ function gridPaths({ grid }: Inputs["grid-paths"]): DPRun {
   b.push({ line: 10, answer: [R - 1, C - 1], answerTone: "good", note: note(), sym: `return dp[${C - 1}]`, num: `= ${ans}`, say: `dp[${C - 1}] = ${ans}: there ${ans === 1 ? "is 1 path" : `are ${ans} paths`} from the top-left to the bottom-right, moving only right or down. The % MOD only matters for huge counts.` });
   return {
     spec: { rows: R, cols: C, colHeads: [{ name: "c", cells: idx(C) }], rowHeads: [{ name: "r", cells: idx(R) }], base: [k(0, 0)], blocked, arcs: false, tags: false },
-    frames: b.frames, code: GRID, title: "Grid paths with rocks (LC 63, CSES Grid Paths I)", result: `${ans} paths`,
+    frames: b.frames, code: GRID, title: "Grid paths with rocks (LC 63, CSES Grid Paths I)", result: `${ans} path${ans === 1 ? "" : "s"}`,
   };
 }
 
@@ -328,7 +328,7 @@ function editDistance({ a, b: s2 }: Inputs["edit-distance"], trace: boolean): DP
   }
   return {
     spec: { rows: n + 1, cols: m + 1, colHeads: [{ name: "j", cells: idx(m + 1) }, { name: "b", cells: ["", ...s2], strong: true }], rowHeads: [{ name: "i", cells: idx(n + 1) }, { name: "a", cells: ["", ...a], strong: true }], base, blocked: [], arcs: false, tags: true },
-    frames: B.frames, code: EDIT, title: "Edit distance (LC 72)", result: `${v} edits`,
+    frames: B.frames, code: EDIT, title: "Edit distance (LC 72)", result: `${v} edit${v === 1 ? "" : "s"}`,
   };
 }
 
@@ -495,7 +495,7 @@ function coinChange({ coins, amount }: Inputs["coin-change"], trace: boolean): D
   }
   return {
     spec: { rows: 1, cols: amount + 1, colHeads: [{ name: "a", cells: idx(amount + 1) }], rowHeads: [{ name: "", cells: ["dp"] }], base: [k(0, 0)], blocked: [], arcs: true, tags: false, fresh: true },
-    frames: B.frames, code: COINS, title: "Coin change: fewest coins (LC 322)", result: ok ? `${d[amount]} coins` : "-1",
+    frames: B.frames, code: COINS, title: "Coin change: fewest coins (LC 322)", result: ok ? `${d[amount]} coin${d[amount] === 1 ? "" : "s"}` : "-1",
   };
 }
 

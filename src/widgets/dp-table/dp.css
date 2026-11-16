@@ -19,7 +19,7 @@
 .dpt-cell { fill: var(--surface); stroke: var(--line); stroke-width: 1; transition: fill 180ms var(--ease-color), stroke 180ms var(--ease-color); }
 .dpt-cell.empty { fill: var(--surface); stroke: var(--line-soft); stroke-dasharray: 3 3; }
 .dpt-cell.base { fill: var(--surface-3); stroke: var(--line); stroke-dasharray: none; }
-.dpt-cell.fresh { fill: color-mix(in srgb, var(--accent) 13%, var(--surface)); }
+.dpt-cell.fresh { fill: color-mix(in srgb, var(--accent) 22%, var(--surface)); }
 .dpt-cell.path { fill: var(--accent-soft); stroke: var(--accent); stroke-width: 1.5; }
 .dpt-cell.dep { stroke-width: 2; }
 .dpt-cell.dep.k-pick { stroke: var(--accent); }
@@ -75,7 +75,7 @@
 .dpt-key .sw { width: 12px; height: 12px; border-radius: 3px; border: 1px solid var(--line); flex: none; }
 .dpt-key .sw.base { background: var(--surface-3); }
 .dpt-key .sw.rock { background: repeating-linear-gradient(45deg, var(--surface-3) 0 3px, color-mix(in srgb, var(--muted) 55%, var(--surface-3)) 3px 5px); }
-.dpt-key .sw.fresh { background: color-mix(in srgb, var(--accent) 13%, var(--surface)); }
+.dpt-key .sw.fresh { background: color-mix(in srgb, var(--accent) 22%, var(--surface)); }
 .dpt-key .sw.cur { background: var(--accent-soft); border: 2px solid var(--accent); }
 .dpt-key .sw.answer.t-good { background: var(--good-soft); border: 2px solid var(--good); }
 .dpt-key .sw.answer.t-bad { background: var(--bad-soft); border: 2px solid var(--bad); }

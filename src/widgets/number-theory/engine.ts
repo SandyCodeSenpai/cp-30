@@ -24,7 +24,6 @@ export function buildSieve(n: number): SieveFrame[] {
   F.push({ line: 1, say: `Start with every number from 0 to ${n} marked prime (1).`, i: null, crossedBy: crossedBy.map((c) => c.slice()), fresh: [], done: false });
   F.push({ line: 2, say: "0 and 1 are not prime, so mark them 0.", i: null, crossedBy: crossedBy.map((c) => c.slice()), fresh: [], done: false });
   F.push({ line: 3, say: `i runs from 2 to isqrt(${n}) = ${r}. A number above ${r} that is not prime has a factor ≤ ${r}, so it gets crossed out anyway.`, i: null, crossedBy: crossedBy.map((c) => c.slice()), fresh: [], done: false });
-  let firstPrime = true;
   for (let i = 2; i <= r; i++) {
     if (!isP[i]) {
       F.push({ line: 4, say: `i = ${i} is already crossed out (by ${crossedBy[i][0]}), so it is not prime. Skip it.`, i, crossedBy: crossedBy.map((c) => c.slice()), fresh: [], done: false });
@@ -35,13 +34,12 @@ export function buildSieve(n: number): SieveFrame[] {
     for (let j = i * i; j <= n; j += i) { mults.push(j); if (isP[j]) fresh.push(j); isP[j] = false; crossedBy[j].push(i); }
     F.push({
       line: 4, say: `i = ${i} is still marked 1, so ${i} is prime.`, i, crossedBy: F[F.length - 1].crossedBy, fresh: [], done: false,
-      ask: firstPrime || i === 3 ? { q: `Cross out the multiples of ${i}. Where do you start?`, options: [`${i} * ${i} = ${i * i}`, `2 * ${i} = ${2 * i}`, `${i}`], answer: 0, why: `Smaller multiples like ${i} * 2 already have a smaller prime factor, so they are crossed out already.` } : undefined,
+      ask: i === 3 || i === 5 ? { q: `Cross out the multiples of ${i}. Where do you start?`, options: [`${i} * ${i} = ${i * i}`, `2 * ${i} = ${2 * i}`, `${i}`], answer: 0, why: `Smaller multiples like ${i} * 2 already have a smaller prime factor, so they are crossed out already.` } : undefined,
     });
-    firstPrime = false;
     const shown = mults.length > 6 ? `${mults.slice(0, 4).join(", ")}, ... ${mults[mults.length - 1]}` : mults.join(", ");
     F.push({
       line: 5,
-      say: mults.length ? `Cross out ${shown}: every ${i}th number from ${i}*${i} = ${i * i}. ${fresh.length < mults.length ? `${mults.length - fresh.length} of them were already crossed.` : ""}`.trim() : `${i}*${i} = ${i * i} is past ${n}: nothing to cross.`,
+      say: mults.length ? `Cross out ${shown}: the multiples of ${i}, from ${i}*${i} = ${i * i}. ${fresh.length < mults.length ? `${mults.length - fresh.length} of them were already crossed.` : ""}`.trim() : `${i}*${i} = ${i * i} is past ${n}: nothing to cross.`,
       i, crossedBy: crossedBy.map((c) => c.slice()), fresh, done: false,
     });
   }

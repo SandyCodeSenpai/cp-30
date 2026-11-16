@@ -31,11 +31,14 @@ export interface GridRow {
 }
 
 /** Cell size that fits the container. */
-export function cellSize(avail: number, w: number, labelW: number, valueW: number, max = 38, min = 15) {
-  return Math.max(min, Math.min(max, Math.floor((avail - labelW - valueW - 8) / w)));
+export function cellSize(avail: number, w: number, labelW: number, valueW: number, max = 38, min = 20, nibble = true, gapX = 3) {
+  // every column has a gapX gap; nibble gaps add another 4px column (plus its gap) every 4 bits
+  const nib = nibble && w > 4 ? Math.floor((w - 1) / 4) * (4 + gapX) : 0;
+  const fit = Math.floor((avail - labelW - valueW - nib - 6) / w) - gapX;
+  return Math.max(min, Math.min(max, fit));
 }
 
-export function BitGrid({ w, rows, cell, labelW, valueW, col, src, header = "index", signed, nibbleGap = true }: {
+export function BitGrid({ w, rows, cell, labelW, valueW, col, src, header = "index", signed, nibbleGap = true, gapX = 3, noValue }: {
   w: number; rows: GridRow[]; cell: number; labelW: number; valueW: number;
   /** Active bit column (LSB index), highlighted across all rows. */
   col?: number | null;
@@ -44,6 +47,9 @@ export function BitGrid({ w, rows, cell, labelW, valueW, col, src, header = "ind
   header?: "index" | "weight" | "both" | "none";
   signed?: boolean;
   nibbleGap?: boolean;
+  gapX?: number;
+  /** Drop the value column (narrow screens show values elsewhere). */
+  noValue?: boolean;
 }) {
   const reduce = useReducedMotion();
   const gap = nibbleGap && w > 4 ? 4 : 0;
@@ -56,11 +62,11 @@ export function BitGrid({ w, rows, cell, labelW, valueW, col, src, header = "ind
     colOf[bit] = colsT.length;
     if (gap && bit > 0 && bit % 4 === 0) colsT.push(`${gap}px`);
   }
-  colsT.push(`minmax(${valueW}px, auto)`);
+  if (!noValue) colsT.push(`minmax(${valueW}px, auto)`);
   const gridCol = (bit: number) => colOf[bit];
-  const valueCol = colsT.length;
+  const valueCol = noValue ? colsT.length + 1 : colsT.length;
   const hasOver = rows.some((r) => r.over && r.over.some(Boolean));
-  const style = { gridTemplateColumns: colsT.join(" "), "--c": `${cell}px` } as CSSProperties;
+  const style = { gridTemplateColumns: colsT.join(" "), columnGap: gapX, "--c": `${cell}px` } as CSSProperties;
   const showWeight = header === "weight" || header === "both";
   const showIndex = header === "index" || header === "both";
   const weight = (b: number) => (signed && b === w - 1 ? `-${2 ** b}` : String(2 ** b));
@@ -77,7 +83,7 @@ export function BitGrid({ w, rows, cell, labelW, valueW, col, src, header = "ind
     gr++;
   }
   rows.forEach((r, ri) => {
-    if (r.rule) { out.push(<div key={`rule${ri}`} className="bg-rule" style={{ gridRow: gr, gridColumn: `1 / ${valueCol + 1}` }} />); gr++; }
+    if (r.rule) { out.push(<div key={`rule${ri}`} className="bg-rule" style={{ gridRow: gr, gridColumn: `1 / ${colsT.length + 1}` }} />); gr++; }
     if (hasOver && r.over) {
       for (let b = 0; b < w; b++) {
         const o = r.over[b];
@@ -92,7 +98,7 @@ export function BitGrid({ w, rows, cell, labelW, valueW, col, src, header = "ind
         const t = r.texts[b];
         out.push(<div key={`c${ri}-${b}`} className={`bg-txt${t === null ? " empty" : ""}${col === b ? " colon" : ""}`} style={{ gridRow: gr, gridColumn: gridCol(b) }}>{t ?? ""}</div>);
       }
-      out.push(<div key={`v${ri}`} className={`bg-val t-${r.tone ?? "mid"}`} style={{ gridRow: gr, gridColumn: valueCol }}>{r.value}</div>);
+      if (!noValue) out.push(<div key={`v${ri}`} className={`bg-val t-${r.tone ?? "mid"}`} style={{ gridRow: gr, gridColumn: valueCol }}>{r.value}</div>);
       gr++;
       return;
     }
@@ -113,7 +119,7 @@ export function BitGrid({ w, rows, cell, labelW, valueW, col, src, header = "ind
         out.push(<div key={`c${ri}-${b}`} className={cls} style={pos} aria-hidden="true">{inner}</div>);
       }
     }
-    out.push(<div key={`v${ri}`} className={`bg-val t-${r.tone ?? "mid"}`} style={{ gridRow: gr, gridColumn: valueCol }}>{r.value}</div>);
+    if (!noValue) out.push(<div key={`v${ri}`} className={`bg-val t-${r.tone ?? "mid"}`} style={{ gridRow: gr, gridColumn: valueCol }}>{r.value}</div>);
     gr++;
   });
   const band = col !== null && col !== undefined && col >= 0 && col < w
@@ -121,9 +127,11 @@ export function BitGrid({ w, rows, cell, labelW, valueW, col, src, header = "ind
         style={{ gridRow: `1 / ${gr}`, gridColumn: gridCol(col) }} />
     : null;
   return (
-    <div className="bg-grid" style={style}>
-      {band}
-      {out}
+    <div className="bg-scroll">
+      <div className="bg-grid" style={style}>
+        {band}
+        {out}
+      </div>
     </div>
   );
 }

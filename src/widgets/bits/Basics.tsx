@@ -25,13 +25,19 @@ export default function Basics({ x0, tabs, onComplete }: { x0?: number; tabs?: R
   const run: Run<BasicsFrame> = useMemo(() => ({ frames: built.frames, start: atEnd.current ? built.frames.length - 1 : 0 }), [built]);
   const p = usePlayer(run, onComplete);
   useEffect(() => { atEnd.current = false; }, [run]);
-  useEffect(() => { setFlash(null); }, [p.cur]);
+  // The "you flipped a bit" note stays until the reader moves the player.
+  const flashAt = useRef<number | null>(null);
+  if (flash && flashAt.current === null) flashAt.current = p.cur;
+  useEffect(() => {
+    if (flash && flashAt.current !== null && p.cur !== flashAt.current) { setFlash(null); flashAt.current = null; }
+  }, [p.cur, flash]);
 
   const boxRef = useRef<HTMLDivElement>(null);
   const avail = useWidth(boxRef) || 600;
   const narrow = avail < 440;
-  const labelW = narrow ? 44 : 60, valueW = w === 16 ? 56 : 44;
-  const cell = cellSize(avail, w, labelW, valueW + 8, 38, 14);
+  const labelW = narrow ? 40 : 60, valueW = narrow ? 0 : w === 16 ? 56 : 44;
+  const gapX = narrow ? 2 : 3;
+  const cell = cellSize(avail, w, labelW, narrow ? 0 : valueW + 10, 38, 20, true, gapX);
 
   const setWidth = (nw: 8 | 12 | 16) => { setW(nw); setX((v) => fit(v, nw, signed)); setY((v) => fit(v, nw, signed)); setK((v) => Math.min(v, nw - 1)); };
   const setSign = (s: boolean) => { setSigned(s); setX((v) => fit(v, w, s)); setY((v) => fit(v, w, s)); };
@@ -41,6 +47,7 @@ export default function Basics({ x0, tabs, onComplete }: { x0?: number; tabs?: R
     atEnd.current = true;
     if (who === "x") setX(nv); else setY(nv);
     const turned = toBits(old, w)[b] ? "off" : "on";
+    flashAt.current = null;
     setFlash({ line: BL.flip, say: `You turned bit ${b} ${turned}: \`${who} ^= 1 << ${b}\`. ${who} = ${old} becomes ${nv}${b === w - 1 && signed ? ` (the top bit is the sign, worth -${2 ** (w - 1)})` : ` (${turned === "on" ? "+" : "-"}${2 ** b})`}.` });
   };
 
@@ -70,7 +77,12 @@ export default function Basics({ x0, tabs, onComplete }: { x0?: number; tabs?: R
   const stage = (
     <Pic label="Binary rows">
       <div className="bt-pic-inner" ref={boxRef}>
-        <BitGrid w={w} rows={rows} cell={cell} labelW={labelW} valueW={valueW} col={f.col} src={f.src} header={cell >= 30 && w <= 8 ? "both" : "index"} signed={signed} />
+        <BitGrid w={w} rows={rows} cell={cell} labelW={labelW} valueW={valueW} col={f.col} src={f.src} header={cell >= 30 && w <= 8 ? "both" : "index"} signed={signed} gapX={gapX} noValue={narrow} />
+        {narrow && (
+          <div className="bt-read" aria-label="Row values">
+            {built.rows.map((r, i) => r.key === "x" ? null : <span key={r.key} className={`bk-var${r.tone === "res" ? " acc" : ""}`}>{r.name} = <b>{f.reveal[i] >= w || r.tone === "in" ? r.v : "…"}</b></span>)}
+          </div>
+        )}
         {usesK(op) && <div className="bt-k"><Slider label="Shift k" value={k} min={0} max={w - 1} onChange={(v) => setK(v)} /></div>}
         {built.overflow && f.reveal[1] >= w && <div className="bt-warn">Python keeps every bit: {x} &lt;&lt; {k} = {built.result}. Only the low {w} bits fit here.</div>}
         <div className="bt-read" aria-label="Live values of x">

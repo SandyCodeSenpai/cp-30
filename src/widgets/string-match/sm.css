@@ -1,0 +1,69 @@
+/* String-match lab pictures. Tokens only. Shares the player kit (rq-*) and a few fw-/sg- text styles. */
+
+.sm-cell { fill: var(--surface); stroke: var(--line); stroke-width: 1.5; transition: fill var(--dur) var(--ease-color), stroke var(--dur) var(--ease-color); }
+.sm-cell.sep { fill: var(--surface-3); stroke-dasharray: 3 3; }
+.sm-cell.todo { fill: var(--surface-2); }
+.sm-cell.cur { stroke: var(--accent); stroke-width: 2.5; }
+.sm-cell.cur.eq { fill: var(--good-soft); stroke: var(--good); }
+.sm-cell.cur.ne, .sm-cell.ne { fill: var(--bad-soft); stroke: var(--bad); stroke-width: 2.5; }
+.sm-cell.match { fill: var(--good-soft); stroke: var(--good); }
+.sm-cell.new { stroke-width: 2.5; }
+.sm-cell.coll { fill: var(--bad-soft); stroke: var(--bad); }
+.sm-cell.known { fill: var(--accent-soft); stroke: var(--accent); stroke-dasharray: 4 3; }
+.sm-cell.win { stroke: var(--accent); }
+.sm-cell.win.match { fill: var(--good-soft); stroke: var(--good); }
+.sm-cell.win.coll { fill: var(--bad-soft); stroke: var(--bad); }
+.sm-ch { fill: var(--ink); font-size: 15px; font-weight: 600; font-family: var(--font-mono); }
+.sm-ch.sep { fill: var(--muted); font-size: 12px; font-weight: 500; }
+.sm-on { fill: var(--accent-text); font-weight: 700; }
+.sm-band { fill: color-mix(in srgb, var(--accent) 8%, transparent); }
+
+.sm-pi { fill: var(--surface-2); stroke: none; transition: fill var(--dur) var(--ease-color); }
+.sm-pi.empty { fill: none; stroke: var(--line); stroke-dasharray: 2 3; stroke-width: 1; }
+.sm-pi.cur { fill: var(--accent); }
+.sm-pi.full { fill: var(--good); }
+.sm-pi.via { fill: var(--warn-soft); stroke: var(--warn); stroke-width: 1.5; stroke-dasharray: none; }
+.sm-pi-t { fill: var(--ink-2); font-size: 12.5px; font-weight: 700; font-family: var(--font-mono); pointer-events: none; }
+.sm-pi.cur + .sm-pi-t, .sm-pi.full + .sm-pi-t { fill: var(--on-part); }
+
+.sm-brk { fill: none; stroke: var(--muted); stroke-width: 1.25; }
+.sm-reg { fill: var(--muted); font-size: 12px; font-weight: 500; }
+
+.sm-sl rect { fill: var(--surface); stroke: var(--line); stroke-width: 1.5; transition: fill var(--dur) var(--ease-color), stroke var(--dur) var(--ease-color), opacity var(--dur) var(--ease-color); }
+.sm-sl.ok rect { fill: var(--good-soft); stroke: var(--good); }
+.sm-sl.known rect { fill: var(--accent-soft); stroke: var(--accent); stroke-dasharray: 4 3; }
+.sm-sl.cmp rect { fill: var(--accent-soft); stroke: var(--accent); stroke-width: 2.5; }
+.sm-sl.bad rect { fill: var(--bad-soft); stroke: var(--bad); stroke-width: 2.5; }
+.sm-sl.rest rect, .sm-sl.rest text { opacity: .5; }
+.sm-sl.rest.pat rect, .sm-sl.rest.pat text { opacity: 1; }
+
+.sm-arc path { fill: none; stroke: var(--warn); stroke-width: 2.25; }
+.sm-arc.copy path { stroke: var(--accent); }
+.sm-head { fill: var(--warn); }
+.sm-arc-pill { fill: var(--warn); }
+.sm-arc.copy .sm-arc-pill { fill: var(--accent); }
+.sm-arc-txt { fill: var(--on-part); font-size: 12px; font-weight: 700; font-family: var(--font-mono); }
+.sm-arc.copy .sm-arc-txt { fill: var(--accent-ink); }
+
+.sm-box { fill: none; stroke: var(--accent); stroke-width: 2; }
+.sm-box.moved { stroke-width: 3; }
+.sm-mirror { fill: none; stroke: var(--muted); stroke-width: 1.5; stroke-dasharray: 5 4; }
+.sm-box-t { fill: var(--accent-text); font-size: 12px; font-weight: 700; font-family: var(--font-mono); }
+
+/* Rolling hash */
+.hs-h line { stroke: var(--line); stroke-width: 1.25; }
+.hs-h text { fill: var(--ink-2); font-size: 12px; font-weight: 600; font-family: var(--font-mono); }
+.hs-h.empty text { fill: var(--muted); }
+.hs-h.hot line { stroke: var(--accent); stroke-width: 2; }
+.hs-h.hot text { fill: var(--accent-text); font-weight: 700; }
+.hs-win { fill: none; stroke: var(--accent); stroke-width: 2.5; }
+.hs-win.match { stroke: var(--good); }
+.hs-win.coll { stroke: var(--bad); }
+.hs-formula { position: relative; margin-top: 8px; padding: 10px 12px; border-radius: var(--radius-m); background: var(--surface-2); min-height: 60px; display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: 6px 12px; }
+.hs-formula.empty { background: transparent; }
+.hs-formula pre { margin: 0; font-family: var(--font-mono); font-size: 13px; line-height: 20px; color: var(--ink); white-space: pre-wrap; word-break: break-all; font-variant-numeric: tabular-nums; min-width: 0; flex: 1 1 260px; }
+.hs-verdict { font-size: 12px; line-height: 16px; font-weight: 700; padding: 4px 10px; border-radius: var(--radius-pill); background: var(--surface-3); color: var(--ink-2); white-space: nowrap; }
+.hs-verdict.v-equal { background: var(--accent-soft); color: var(--accent-text); }
+.hs-verdict.v-match { background: var(--good-soft); color: var(--good-ink); }
+.hs-verdict.v-collision { background: var(--bad-soft); color: var(--bad-ink); }
+.sm-head2 { fill: var(--accent); }

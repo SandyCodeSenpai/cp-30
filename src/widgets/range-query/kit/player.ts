@@ -18,7 +18,10 @@ interface Asking { at: number; chosen: number | null; resume: boolean }
 /** `frames` must be a new array whenever the input changes; that resets the player. */
 export function usePlayer<F extends BaseFrame>(frames: F[], onComplete?: () => void) {
   const last = Math.max(0, frames.length - 1);
-  const [idx, setIdx] = useState(0);
+  const [idx, setIdxState] = useState(0);
+  // Mirror the index in a ref so several fast clicks or key presses before a render still add up.
+  const idxRef = useRef(0);
+  const setIdx = useCallback((v: number) => { idxRef.current = v; setIdxState(v); }, []);
   const [playing, setPlaying] = useState(false);
   const [speed, setSpeed] = useState<Speed>(1);
   const [predict, setPredict] = useState(false);
@@ -27,27 +30,29 @@ export function usePlayer<F extends BaseFrame>(frames: F[], onComplete?: () => v
   const completed = useRef(false);
   const cb = useRef(onComplete); cb.current = onComplete;
 
-  useEffect(() => { setIdx(0); setPlaying(false); setAsking(null); answered.current = new Set(); }, [frames]);
+  useEffect(() => { setIdx(0); setPlaying(false); setAsking(null); answered.current = new Set(); }, [frames, setIdx]);
 
   const cur = Math.min(idx, last);
+  const askingRef = useRef<Asking | null>(null); askingRef.current = asking;
 
   const forward = useCallback((fromPlay: boolean): boolean => {
-    if (asking || cur >= last) return false;
-    const f = frames[cur];
-    if (predict && f.ask && !answered.current.has(cur)) { setAsking({ at: cur, chosen: null, resume: fromPlay }); setPlaying(false); return false; }
-    setIdx(cur + 1); return true;
-  }, [asking, cur, last, frames, predict]);
+    const at = Math.min(idxRef.current, last);
+    if (askingRef.current || at >= last) return false;
+    const f = frames[at];
+    if (predict && f.ask && !answered.current.has(at)) { const a = { at, chosen: null, resume: fromPlay }; askingRef.current = a; setAsking(a); setPlaying(false); return false; }
+    setIdx(at + 1); return true;
+  }, [last, frames, predict, setIdx]);
 
   const step = useCallback(() => { setPlaying(false); forward(false); }, [forward]);
-  const back = useCallback(() => { setPlaying(false); setAsking(null); setIdx(Math.max(0, cur - 1)); }, [cur]);
-  const reset = useCallback(() => { setPlaying(false); setAsking(null); setIdx(0); }, []);
-  const toEnd = useCallback(() => { setPlaying(false); setAsking(null); setIdx(last); }, [last]);
+  const back = useCallback(() => { setPlaying(false); setAsking(null); setIdx(Math.max(0, Math.min(idxRef.current, last) - 1)); }, [last, setIdx]);
+  const reset = useCallback(() => { setPlaying(false); setAsking(null); setIdx(0); }, [setIdx]);
+  const toEnd = useCallback(() => { setPlaying(false); setAsking(null); setIdx(last); }, [last, setIdx]);
   const toggle = useCallback(() => {
     if (asking) return;
     if (playing) { setPlaying(false); return; }
     if (cur >= last) setIdx(0);
     setPlaying(true);
-  }, [asking, playing, cur, last]);
+  }, [asking, playing, cur, last, setIdx]);
   const choose = useCallback((n: number) => {
     setAsking((a) => (a && a.chosen === null ? { ...a, chosen: n } : a));
     if (asking) answered.current.add(asking.at);
@@ -56,7 +61,7 @@ export function usePlayer<F extends BaseFrame>(frames: F[], onComplete?: () => v
     if (!asking) return;
     setIdx(asking.at + 1); setAsking(null);
     if (asking.resume) setPlaying(true);
-  }, [asking]);
+  }, [asking, setIdx]);
 
   useEffect(() => {
     if (!playing || asking) return;

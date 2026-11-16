@@ -119,8 +119,9 @@ export function CodePanel({ title, lines, active, active2, note }: { title: stri
   useEffect(() => {
     const el = scroll.current; if (!el || active < 0) return;
     const top = active * LH + 8, bottom = top + LH;
-    if (top < el.scrollTop + 8) el.scrollTo({ top: Math.max(0, top - 3 * LH), behavior: reduce ? "auto" : "smooth" });
-    else if (bottom > el.scrollTop + el.clientHeight - 8) el.scrollTo({ top: bottom - el.clientHeight + 3 * LH, behavior: reduce ? "auto" : "smooth" });
+    const snap = (first: number) => (first <= 0 ? 0 : 8 + first * LH);   // keep whole lines at the top edge
+    if (top < el.scrollTop + 8) el.scrollTo({ top: snap(active - 3), behavior: reduce ? "auto" : "smooth" });
+    else if (bottom > el.scrollTop + el.clientHeight - 8) el.scrollTo({ top: snap(Math.ceil((bottom + 3 * LH - el.clientHeight - 8) / LH)), behavior: reduce ? "auto" : "smooth" });
   }, [active, reduce]);
   return (
     <figure className="rq-code" aria-label={`Python code: ${title}. Line ${active + 1} is running.`}>

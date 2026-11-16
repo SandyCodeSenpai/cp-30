@@ -8,9 +8,15 @@ let errors = [];
 page.on("console", (m) => { if (m.type() === "error") errors.push(m.text()); });
 page.on("pageerror", (e) => errors.push("pageerror: " + e.message));
 await page.goto("http://127.0.0.1:5181/#home", { waitUntil: "networkidle0" });
-const meta = await page.evaluate(async () => { const m = await import("/src/content/index.ts"); const r = await import("/src/widgets/ids.ts").catch(() => null); return { ch: m.CHAPTERS.map((c) => ({ n: c.n, l: c.lessons.length })) }; });
-const widgets = ["playground","press-play","tcp-throughput","dns-resolve","cache-headers","consistent-hash","request-collapse","eviction","shield-offload","abr-ladder","signed-url","multi-cdn","abr-player","slo-burn","failover","premiere","cost"];
-const routes = ["home", "course", "labs", "glossary", ...meta.ch.map((c) => `ch${c.n}`), ...meta.ch.flatMap((c) => Array.from({ length: c.l }, (_, i) => `ch${c.n}-${i + 1}`)), ...widgets.map((x) => `lab-${x}`)];
+const meta = await page.evaluate(async () => {
+  const m = await import("/src/content/index.ts"); const r = await import("/src/widgets/registry.ts");
+  const b64 = (o) => btoa(JSON.stringify(o)).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
+  const steps = new Set();
+  for (const c of m.CHAPTERS) for (const l of c.lessons) for (const s of l.steps) if (s.kind === "widget") steps.add(`w-${s.widget}${s.props ? "~" + b64(s.props) : ""}`);
+  return { ch: m.CHAPTERS.map((c) => ({ n: c.n, l: c.lessons.length })), widgets: Object.keys(r.WIDGETS), widgetSteps: [...steps] };
+});
+const only = process.env.ONLY;
+const routes = only === "widgets" ? meta.widgetSteps : ["home", "today", "today-0", "today-15", "today-30", "gym", "tracker", "course", "labs", "glossary", "ch99-1", ...meta.ch.map((c) => `ch${c.n}`), ...meta.ch.flatMap((c) => Array.from({ length: c.l }, (_, i) => `ch${c.n}-${i + 1}`)), ...meta.widgets.map((x) => `lab-${x}`), ...meta.widgetSteps];
 let bad = 0;
 for (const r of routes) {
   errors = [];

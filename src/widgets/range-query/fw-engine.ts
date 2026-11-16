@@ -45,12 +45,12 @@ export function fenwickFrames(nums: number[], op: FwOp, p: { i: number; d: numbe
     for (let i = 1; i <= n; i++) {
       const path = stepUp(i, n);
       for (const j of path) t[j] += a[i];
-      const ask: Ask | undefined = i === 3 && n >= 4 ? { q: `\`add(3, ${a[3]})\` starts at i = 3. Which t cells does it change?`, options: ["Only t[3]", n >= 8 ? "t[3], t[4], t[8]" : "t[3], t[4]", "t[1], t[2], t[3]"], answer: 1, why: "3 = 011 → 3 + 1 = 4 = 100 → 4 + 4 = 8. Each step adds the lowest set bit." } : undefined;
+      const ask: Ask | undefined = i === 3 && n >= 4 ? { q: `\`add(3, ${a[3]})\` starts at i = 3. Which t cells does it change?`, options: ["Only t[3]", stepUp(3, n).map((j) => `t[${j}]`).join(", "), "t[1], t[2], t[3]"], answer: 1, why: `Start at 3 = 011 and keep adding the lowest set bit: ${stepUp(3, n).join(" → ")}. Each of those blocks contains a[3].` } : undefined;
+      if (ask) frames[frames.length - 1].ask = ask;
       frames.push(base({
         line: BL.buildAdd, line2: BL.buildFor, t: [...t], trail: path, changed: path, hot: path[0], flashA: i,
         vars: [{ k: "i", v: String(i) }, { k: "x", v: String(a[i]) }],
         say: `\`add(${i}, ${a[i]})\` climbs ${path.join(" → ")}: ${path.length === 1 ? "one block holds" : `${path.length} blocks hold`} a[${i}], so ${path.length === 1 ? "it changes" : "each one changes"}.`,
-        ask: i === 2 ? undefined : ask,
       }));
     }
     frames.push(base({ line: BL.buildAdd, t: [...t], done: true, say: `Built with ${n} adds, O(n log n). Each t[i] holds the sum of the ${"`i & -i`"} values that end at i.` }));
@@ -75,15 +75,14 @@ export function fenwickFrames(nums: number[], op: FwOp, p: { i: number; d: numbe
         say: `\`s += t[${i}]\`. t[${i}] = ${t[i]} is the sum of a[${lo}..${i}] (${lb} value${lb > 1 ? "s" : ""}, because i & -i = ${lb}). Now s = ${s}.` }));
       const nx = i - lb;
       const ask: Ask | undefined = nx > 0 ? (() => {
-        const opts = Array.from(new Set([nx, i - 1, Math.max(0, i - 2 * lb)].filter((x) => x !== i))).slice(0, 3);
-        while (opts.length < 2) opts.push(nx + 1);
+        const opts = [nx, ...Array.from(new Set([i - 1, i - 2 * lb, i + lb, nx + 1])).filter((x) => x !== i && x !== nx && x >= 0)].slice(0, 3);
         const order = [...opts].sort((x, y) => x - y);
         return { q: `i = ${i} = ${bin(i, W)}. What is i after \`i -= i & -i\`?`, options: order.map(String), answer: order.indexOf(nx), why: `i & -i keeps only the lowest 1 bit: ${bin(lb, W)} = ${lb}. ${i} − ${lb} = ${nx}.` };
       })() : undefined;
+      if (ask) frames[frames.length - 1].ask = ask;
       frames.push(base({ line: BL.sumJump, line2, t, i: nx, jump: { from: i, to: nx, dir: -1 }, trail: [...used], plus: pl(), minus: mi(),
         vars: [...pre.extra, { k: "i", v: `${nx} = ${bin(nx, W)}`, tone: "accent" }, { k: "s", v: String(s), tone: "good" }],
-        say: nx > 0 ? `\`i -= i & -i\`: ${bin(i, W)} loses its lowest 1 bit (${lb}), so i = ${nx}. The next block ends just before a[${lo}].` : `\`i -= i & -i\`: ${i} − ${lb} = 0. All of a[1..${i0}] is covered.`,
-        ask }));
+        say: nx > 0 ? `\`i -= i & -i\`: ${bin(i, W)} loses its lowest 1 bit (${lb}), so i = ${nx}. The next block ends just before a[${lo}].` : `\`i -= i & -i\`: ${i} − ${lb} = 0. All of a[1..${i0}] is covered.` }));
       i = nx;
     }
     frames.push(base({ line: BL.sumRet, line2, t, i: 0, trail: [...used], plus: pl(), minus: mi(),
@@ -119,17 +118,17 @@ export function fenwickFrames(nums: number[], op: FwOp, p: { i: number; d: numbe
         say: `\`t[${i}] += ${d}\`. Block ${i} covers a[${i - lb + 1}..${i}], which contains a[${i0}]. t[${i}] is now ${t2[i]}.` }));
       const nx = i + lb;
       const ask: Ask | undefined = nx <= n ? (() => {
-        const order = Array.from(new Set([nx, i + 1, i * 2 === nx ? i + 2 : i * 2])).filter((x) => x !== i).sort((x, y) => x - y).slice(0, 3);
+        const order = [nx, ...Array.from(new Set([i + 1, i * 2, i + 2, nx * 2])).filter((x) => x !== i && x !== nx)].slice(0, 3).sort((x, y) => x - y);
         return { q: `i = ${i} = ${bin(i, W)}. What is i after \`i += i & -i\`?`, options: order.map(String), answer: order.indexOf(nx), why: `The lowest 1 bit of ${bin(i, W)} is ${lb}. ${i} + ${lb} = ${nx}: the next block up that also contains a[${i0}].` };
       })() : undefined;
+      if (ask) frames[frames.length - 1].ask = ask;
       frames.push(base({ line: BL.addJump, a: a2, t: [...t2], i: nx, jump: { from: i, to: nx, dir: 1 }, trail: [...changed], changed: [...changed], flashA: i0,
         vars: [{ k: "i", v: `${nx} = ${bin(nx, W)}`, tone: "accent" }, { k: "delta", v: String(d) }],
-        say: nx <= n ? `\`i += i & -i\`: ${i} + ${lb} = ${nx} (${bin(nx, W)}). Adding the lowest bit carries to a longer block.` : `\`i += i & -i\`: ${i} + ${lb} = ${nx}, which is past n = ${n}. The loop stops.`,
-        ask }));
+        say: nx <= n ? `\`i += i & -i\`: ${i} + ${lb} = ${nx} (${bin(nx, W)}). Adding the lowest bit carries to a longer block.` : `\`i += i & -i\`: ${i} + ${lb} = ${nx}, which is past n = ${n}. The loop stops.` }));
       i = nx;
     }
     frames.push(base({ line: BL.addWhile, a: a2, t: [...t2], i: null, trail: changed, changed, done: true, vars: [{ k: "changed", v: String(changed.length) }],
-      say: `Done: ${changed.length} cells changed (${changed.map((x) => `t[${x}]`).join(", ")}). That is about log2(${n}) + 1, never n.` }));
+      say: `Done: ${changed.length} cells changed (${changed.map((x) => `t[${x}]`).join(", ")}). Never more than log2(n) + 1 = ${Math.floor(Math.log2(n)) + 1}, never n.` }));
     return frames;
   }
 

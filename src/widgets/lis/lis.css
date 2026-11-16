@@ -1,0 +1,76 @@
+/* LIS lab. Tokens only. Prefix: lis- */
+.lis-stage { padding: 12px; display: flex; flex-direction: column; gap: 10px; }
+.lis-top { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 6px 12px; }
+.lis-title { font-size: 14px; line-height: 20px; font-weight: 600; color: var(--ink); }
+.lis-result { font-size: 13px; line-height: 18px; color: var(--muted); }
+.lis-result b { color: var(--ink); font-weight: 600; font-variant-numeric: tabular-nums; }
+
+.lis-scroll { overflow-x: auto; overflow-y: hidden; scrollbar-width: thin; padding-bottom: 2px; }
+.ui-stage .lis-svg { display: block; max-width: none; margin: 0 auto; font-family: var(--font-body); overflow: visible; }
+.lis-svg text { font-variant-numeric: tabular-nums; }
+
+.lis-idx { fill: var(--muted); font-size: 12px; font-weight: 500; }
+.lis-lab { fill: var(--ink-2); font-family: var(--font-mono); font-size: 13px; font-weight: 600; }
+.lis-sub { fill: var(--muted); font-size: 12px; font-weight: 500; }
+.lis-qlab { fill: var(--muted); font-family: var(--font-mono); font-size: 12px; font-weight: 500; }
+.lis-qlab.on { fill: var(--accent-text); font-weight: 700; }
+
+.lis-cell { fill: var(--surface); stroke: var(--line); stroke-width: 1; transition: fill 180ms var(--ease-color), stroke 180ms var(--ease-color); }
+.lis-cell.future { fill: var(--surface); stroke: var(--line-soft); stroke-dasharray: 3 3; }
+.lis-cell.cur { fill: var(--accent-soft); stroke: var(--accent); stroke-width: 2.5; }
+.lis-cell.target { stroke: var(--accent); stroke-width: 2; stroke-dasharray: 5 3; }
+.lis-cell.ghost { fill: transparent; stroke: var(--line); stroke-dasharray: 3 3; }
+.lis-cell.ghost.target { fill: var(--accent-soft); stroke: var(--accent); }
+.lis-cell.cmp-up { stroke: var(--accent); stroke-width: 2; }
+.lis-cell.cmp-keep { stroke: var(--ink-2); stroke-width: 2; }
+.lis-cell.cmp-no { stroke: var(--muted); stroke-width: 2; stroke-dasharray: 4 3; }
+.lis-cell.lis { fill: var(--good-soft); stroke: var(--good); stroke-width: 2; }
+.lis-cell.tail { fill: var(--surface-2); }
+.lis-cell.tail.cur { fill: var(--accent-soft); }
+.lis-cell.tail.ghost { fill: transparent; }
+.lis-cell.tail.ghost.target { fill: var(--accent-soft); }
+
+.lis-val { fill: var(--ink); font-family: var(--font-mono); font-weight: 600; pointer-events: none; }
+.lis-val.future { fill: var(--muted); font-weight: 500; }
+.lis-val.cur { fill: var(--accent-text); }
+.lis-val.lis { fill: var(--good-ink); }
+
+.lis-dp { fill: var(--surface-2); stroke: var(--line-soft); }
+.lis-dp.empty { fill: transparent; stroke-dasharray: 3 3; stroke: var(--line); }
+.lis-dp.on { fill: var(--accent-soft); stroke: var(--accent); stroke-width: 1.5; }
+.lis-dp.lis { fill: var(--good-soft); stroke: var(--good); }
+.lis-dpv { fill: var(--ink-2); font-family: var(--font-mono); font-size: 13px; font-weight: 600; }
+.lis-dpv.on { fill: var(--accent-text); }
+
+.lis-probe { fill: var(--muted); }
+.lis-caret { fill: var(--accent-text); font-family: var(--font-mono); font-size: 12px; font-weight: 700; }
+.lis-move { fill: none; stroke: var(--accent); stroke-width: 2; stroke-dasharray: 5 4; pointer-events: none; }
+.lis-arc { fill: none; stroke-width: 2.2; stroke-linecap: round; pointer-events: none; }
+.lis-arc.up { stroke: var(--accent); }
+.lis-arc.keep { stroke: var(--ink-2); }
+.lis-arc.no { stroke: var(--muted); stroke-dasharray: 4 3; }
+.lis-ah.acc { fill: var(--accent); } .lis-ah.mut { fill: var(--muted); } .lis-ah.bad { fill: var(--bad); }
+
+.lis-q { fill: var(--surface); stroke: var(--line); }
+.lis-q.empty { fill: transparent; stroke: var(--line-soft); stroke-dasharray: 3 3; }
+.lis-q.no { fill: var(--surface-2); stroke: var(--line-soft); }
+.lis-q.best { stroke: var(--ink-2); stroke-width: 1.5; }
+.lis-q.cur { fill: var(--accent-soft); stroke: var(--accent); stroke-width: 2; }
+.lis-qv { fill: var(--ink-2); font-family: var(--font-mono); font-size: 13px; font-weight: 600; }
+.lis-qv.no { fill: var(--muted); font-weight: 500; }
+.lis-qv.best { fill: var(--ink); font-weight: 700; }
+.lis-qv.cur { fill: var(--accent-text); }
+
+.lis-info { display: flex; flex-direction: column; gap: 6px; padding: 10px 12px; border-radius: var(--radius-m); background: var(--surface-2); }
+.lis-eq { font-family: var(--font-mono); font-size: 14px; line-height: 22px; font-weight: 600; color: var(--ink); overflow-wrap: anywhere; }
+.lis-stats { display: flex; flex-wrap: wrap; gap: 4px 16px; font-size: 13px; line-height: 18px; color: var(--ink-2); }
+.lis-stats b { font-family: var(--font-mono); color: var(--ink); font-weight: 700; }
+.lis-key { display: flex; flex-wrap: wrap; gap: 4px 12px; font-size: 12px; line-height: 16px; color: var(--muted); }
+.lis-key span { display: inline-flex; align-items: center; gap: 5px; }
+.lis-key .sw { width: 12px; height: 12px; border-radius: 3px; border: 1px solid var(--line); flex: none; }
+.lis-key .sw.cur { background: var(--accent-soft); border: 2px solid var(--accent); }
+.lis-key .sw.probe { border: 0; width: 7px; height: 7px; border-radius: 50%; background: var(--muted); }
+.lis-key .sw.no { background: var(--surface-2); }
+.lis-key .sw.lis { background: var(--good-soft); border: 2px solid var(--good); }
+
+.lis-tabs { max-width: 520px; }

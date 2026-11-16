@@ -77,6 +77,7 @@ export default function RecursionTree(props: WidgetProps) {
           </div>
         )}
         <div className="rt-treewrap">
+          {p.cur === 0 && !p.playing && <div className="rt-hint" aria-hidden="true">The tree grows one call at a time. Press Step or Play.</div>}
           <CallTree nodes={run.nodes} levelH={hasSub ? 80 : 58} st={f.st} active={f.active} flow={f.flow} flowKey={p.cur} label={`Call tree for ${m}. ${f.say}`} />
         </div>
       </div>

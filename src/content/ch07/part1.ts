@@ -27,7 +27,7 @@ const lessons: Lesson[] = [
       {
         kind: "read",
         title: "Today's goal and schedule",
-        body: "**Goal:** answer any \"return it modulo 10^9+7\" counting problem without fear, and compute nCr for n up to 10^6 in O(1) per query.\n\nTime boxes in the problem lists are caps. Stretch rows are **overflow**: if you do not reach them, they go to your [[re-solve queue]].\n\nDay 22 follows contest day 21, so the block is compressed:\n- 0:00–0:45 [[upsolve]] Contest #3: the first problem you did not solve. Editorial only after 20 stuck minutes.\n- 0:45–0:55 warm-up, 0:55–1:20 idea and templates\n- 1:20–2:40 problems, 2:40–3:00 log",
+        body: "Time boxes in the problem lists are caps. Stretch rows are **overflow**: if you do not reach them, they go to your [[re-solve queue]].\n\nDay 22 follows contest day 21, so the block is compressed:\n- 0:00–0:45 [[upsolve]] Contest #3: the first problem you did not solve. Editorial only after 20 stuck minutes.\n- 0:45–0:55 warm-up, 0:55–1:20 idea and templates\n- 1:20–2:40 problems, 2:40–3:00 log",
       },
       {
         kind: "read",
@@ -550,7 +550,7 @@ const lessons: Lesson[] = [
       {
         kind: "read",
         title: "Primes, factors and a counting flip",
-        body: "**Goal:** generate primes to 10^7, factorize 10^5 numbers fast, list divisors in O(√n), and turn \"sum over all subarrays\" into \"sum over elements\".\n\nA **prime** has exactly two divisors: 1 and itself. Every number splits into primes in one way: 60 = 2 · 2 · 3 · 5.\n\nToday has four tools: the [[sieve]], the smallest-prime-factor table, [[trial division]], and the [[contribution technique]].",
+        body: "A **prime** has exactly two divisors: 1 and itself. Every number splits into primes in one way: 60 = 2 · 2 · 3 · 5.\n\nToday has four tools: the [[sieve]], the smallest-prime-factor table, [[trial division]], and the [[contribution technique]].",
         visual: {
           kind: "stats",
           items: [
@@ -1116,7 +1116,7 @@ const lessons: Lesson[] = [
       {
         kind: "read",
         title: "Think in bits",
-        body: "**Goal:** use the five core bit tricks without thinking, and solve \"sum of XOR/AND/OR over all pairs\" in O(n · 30).\n\nEvery int is a row of bits. 12 = 1100 in binary: bits 3 and 2 are set, and bit b is worth 2^b. Today you learn to stop seeing numbers and start seeing columns of 0s and 1s.",
+        body: "Every int is a row of bits. 12 = 1100 in binary: bits 3 and 2 are set, and bit b is worth 2^b. Today you learn to stop seeing numbers and start seeing columns of 0s and 1s.",
         visual: {
           kind: "stats",
           items: [
@@ -1533,7 +1533,7 @@ const lessons: Lesson[] = [
       {
         kind: "read",
         title: "When prefix sums are not enough",
-        body: "**Goal:** answer point-update/range-query problems in O(log n), count inversions, and have a Codeforces-safe replacement for SortedList.\n\n[[Prefix sums|prefix sum]] (Day 4) answer a range sum in O(1). But one update changes every prefix after it: O(n) to rebuild. With 2·10^5 updates that is 4·10^10 steps.\n\nA [[Fenwick tree]], also called a binary indexed tree (BIT), does both update and query in O(log n).",
+        body: "[[Prefix sums|prefix sum]] (Day 4) answer a range sum in O(1). But one update changes every prefix after it: O(n) to rebuild. With 2·10^5 updates that is 4·10^10 steps.\n\nA [[Fenwick tree]], also called a binary indexed tree (BIT), does both update and query in O(log n).",
         visual: {
           kind: "compare",
           left: { title: "Prefix sums", points: ["query O(1)", "update O(n)", "static arrays only"] },

@@ -18,7 +18,7 @@ export default function PerBit({ tabs, onComplete }: { tabs?: ReactNode; onCompl
   const avail = side ? Math.min(full * 0.5, 320) : full;
   const narrow = avail < 440;
   const labelW = narrow ? 44 : 56, valueW = 36;
-  const cell = cellSize(avail, w, labelW, valueW, 36, 18);
+  const cell = cellSize(avail, w, labelW, valueW + 10, 36, 20);
   const b = f.b;
   const rows: GridRow[] = a.map((v, i) => ({
     key: `a${i}`, label: `a[${i}]`, bits: toBits(v, w), tone: "mid" as const, value: v,

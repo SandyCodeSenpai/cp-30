@@ -4,7 +4,7 @@
 .rq-grid { display: grid; grid-template-columns: minmax(0, 1fr); gap: 12px; align-items: start; }
 .rq-left, .rq-right { display: flex; flex-direction: column; gap: 12px; min-width: 0; }
 @container (min-width: 860px) {
-  .rq-grid { grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr); gap: 16px; }
+  .rq-grid { grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr); gap: 16px; }
   .rq-right { position: sticky; top: 72px; }
 }
 
@@ -14,7 +14,7 @@
 .rq-stage-head { display: flex; align-items: center; justify-content: space-between; gap: 8px 12px; flex-wrap: wrap; margin-bottom: 6px; }
 .rq-stage-title { font-size: 13px; line-height: 18px; font-weight: 600; color: var(--ink-2); font-family: var(--font-mono); }
 .rq-hscroll { overflow-x: auto; overflow-y: hidden; min-width: 0; scrollbar-width: thin; }
-.rq-svg { display: block; overflow: visible; font-family: var(--font-body); }
+.rq-svg { display: block; overflow: visible; font-family: var(--font-body); max-width: none; height: auto; flex: none; }
 .rq-svg text { font-variant-numeric: tabular-nums; }
 
 /* Op picker row */

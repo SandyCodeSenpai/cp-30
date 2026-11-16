@@ -20,6 +20,16 @@ const DELAY: Record<Speed, number> = { 0.5: 1700, 1: 1000, 2: 480 };
 
 interface Asking { at: number; chosen: number | null; resume: boolean }
 
+/** Display order of a question's options: a stable rotation, so the right answer is not always first. */
+export function askOrder(ask: Ask): number[] {
+  const n = ask.options.length;
+  if (/^[01]$/.test(ask.options[0] ?? "") && n === 2) return [0, 1];
+  let h = 0;
+  for (const ch of ask.q) h = (h * 31 + ch.charCodeAt(0)) >>> 0;
+  const r = h % n;
+  return Array.from({ length: n }, (_, i) => (i + r) % n);
+}
+
 export function usePlayer<F extends BaseFrame>(run: Run<F>, onComplete?: () => void) {
   const { frames } = run;
   const last = Math.max(0, frames.length - 1);
@@ -31,16 +41,16 @@ export function usePlayer<F extends BaseFrame>(run: Run<F>, onComplete?: () => v
   const answered = useRef(new Set<number>());
   const completed = useRef(false);
   const cb = useRef(onComplete); cb.current = onComplete;
-  const firstRun = useRef(run);
-
-  useEffect(() => {
-    if (firstRun.current === run) return;
-    firstRun.current = run;
-    setIdx(Math.min(run.start ?? 0, Math.max(0, run.frames.length - 1)));
+  // A new run resets the player during render, so no stale frame is ever drawn.
+  const [seenRun, setSeenRun] = useState(run);
+  let idxNow = idx;
+  if (seenRun !== run) {
+    idxNow = Math.min(run.start ?? 0, Math.max(0, run.frames.length - 1));
+    setSeenRun(run); setIdx(idxNow);
     setPlaying(false); setAsking(null); answered.current = new Set();
-  }, [run]);
+  }
 
-  const cur = Math.min(idx, last);
+  const cur = Math.min(idxNow, last);
 
   const forward = useCallback((fromPlay: boolean): boolean => {
     if (asking || cur >= last) return false;
@@ -85,7 +95,7 @@ export function usePlayer<F extends BaseFrame>(run: Run<F>, onComplete?: () => v
     if (asking) {
       const ask = frames[asking.at]?.ask;
       const n = Number(e.key);
-      if (ask && asking.chosen === null && n >= 1 && n <= ask.options.length) { e.preventDefault(); choose(n - 1); return; }
+      if (ask && asking.chosen === null && n >= 1 && n <= ask.options.length) { e.preventDefault(); choose(askOrder(ask)[n - 1]); return; }
       if (asking.chosen !== null && (e.key === "Enter" || e.key === "ArrowRight")) { e.preventDefault(); proceed(); return; }
     }
     if (e.key === "ArrowRight") { e.preventDefault(); step(); }
@@ -154,11 +164,12 @@ function PredictCard({ ask, chosen, onChoose, onContinue }: { ask: Ask; chosen: 
       <div className="bk-ask-label">Predict</div>
       <p className="bk-ask-q"><Rich text={ask.q} /></p>
       <div className="bk-ask-opts" role="group" aria-label="Your prediction">
-        {ask.options.map((o, i) => {
+        {askOrder(ask).map((i, pos) => {
+          const o = ask.options[i];
           const state = chosen === null ? "" : i === ask.answer ? " right" : i === chosen ? " wrong" : " dim";
           return (
             <button key={i} type="button" className={`bk-opt${state}`} disabled={chosen !== null} onClick={() => onChoose(i)}>
-              <span className="bk-opt-key">{i + 1}</span><span><Rich text={o} /></span>
+              <span className="bk-opt-key">{pos + 1}</span><span><Rich text={o} /></span>
             </button>
           );
         })}

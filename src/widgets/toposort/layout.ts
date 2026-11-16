@@ -62,7 +62,7 @@ export function layoutGraph(n: number, edges: Edge[], W: number): GLayout {
   } else {
     const padY = 24, rowGap = 86;
     const colGap = maxPer > 1 ? Math.min(104, (W - 64) / (maxPer - 1)) : 0;
-    height = padY * 2 + (nL - 1) * rowGap + 2 * NR + 18;
+    height = padY * 2 + (nL - 1) * rowGap + 2 * NR;
     layers.forEach((l, li) => l.forEach((v, i) => {
       pos[v] = { x: W / 2 + (i - (l.length - 1) / 2) * colGap, y: padY + NR + li * rowGap };
     }));

@@ -382,7 +382,7 @@ export function buildQueens(n: number, stopFirst: boolean): Run {
   const endBoard = res.length ? v({ solved: true }) : v();
   queens.length = 0;
   b.snap(b.line("return res"), stopFirst
-    ? `Stop at the first solution: ${res[0] ?? "none"}. It took ${b.calls} calls and ${b.nodes.filter((x) => x.kind === "cut").length} cuts.`
+    ? `Stop at the first solution: ${res[0] ?? "none"}. It took ${b.calls} calls and ${b.nodes.filter((x) => x.kind === "cut").length} cuts. (In code, make dfs return True once res is not empty, and stop the loop.)`
     : `Done. ${n} queens has ${res.length} solution${res.length === 1 ? "" : "s"} (the board shows the first). The cuts kept the search to ${b.calls} calls instead of ${n}^${n} = ${n ** n} full boards.`, endBoard);
   return { nodes: b.nodes, frames: b.frames, code: QUEENS, title: "Day 10 · N-Queens: place, recurse, undo" };
 }

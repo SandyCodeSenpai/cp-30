@@ -88,7 +88,8 @@ export function CallTree({ nodes, levelH, st, active, flow, flowKey, label }: {
         {nodes.map((nd) => {
           if (nd.parent < 0 || !vis(nd.id)) return null;
           const p = nd.parent;
-          const below = nodes[p].sub || nodes[p].ret ? 21 : 0; // leave room for the text under the parent
+          const ps = st[p];
+          const below = nodes[p].sub || (nodes[p].ret && (ps === "done" || ps === "hit")) ? 21 : 0; // room for the text under the parent
           const x1 = X(p), y1 = Y(p) + NODE_H / 2 + below, x2 = X(nd.id), y2 = Y(nd.id) - edgeEnd(nd.id);
           const hot = onPath.has(nd.id);
           const cut = nd.kind === "cut";

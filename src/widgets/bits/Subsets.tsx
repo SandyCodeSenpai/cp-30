@@ -20,22 +20,23 @@ export default function Subsets({ x0, tabs, onComplete }: { x0?: number; tabs?: 
   const boxRef = useRef<HTMLDivElement>(null);
   const avail = useWidth(boxRef) || 600;
   const narrow = avail < 440;
-  const labelW = narrow ? 58 : 72, valueW = narrow ? 76 : 104;
-  const cell = cellSize(avail, n, labelW, valueW, 40, 24);
+  const labelW = narrow ? 58 : 72, valueW = narrow ? 40 : 150;
+  const sv = (m: number) => (narrow ? String(m) : setStr(m, n));
+  const cell = cellSize(avail, n, labelW, valueW + 10, 40, 24, false);
   const outside = Array.from({ length: n }, (_, i) => i).filter((i) => !((mask >> i) & 1));
 
   const rows: GridRow[] = [
-    { key: "mask", label: "mask", bits: toBits(mask, n), tone: "in", value: setStr(mask, n), onToggle: (b) => setMask(mask ^ (1 << b)), ariaName: "mask" },
+    { key: "mask", label: "mask", bits: toBits(mask, n), tone: "in", value: sv(mask), onToggle: (b) => setMask(mask ^ (1 << b)), ariaName: "mask" },
   ];
   if (f.calc) {
     rows.push(
-      { key: "sub", label: "sub", bits: toBits(f.calc.sub, n), tone: "mid", value: setStr(f.calc.sub, n), rule: true },
+      { key: "sub", label: "sub", bits: toBits(f.calc.sub, n), tone: "mid", value: sv(f.calc.sub), rule: true },
       { key: "m1", label: "sub - 1", bits: toBits(f.calc.minus, n), tone: "mid", value: String(f.calc.minus), mark: outside.filter((i) => (f.calc!.minus >> i) & 1) },
       { key: "am", label: "& mask", bits: toBits(mask, n), tone: "mid", value: String(mask), fade: outside },
-      { key: "nx", label: "next", bits: toBits(f.calc.next, n), tone: "res", value: f.calc.next ? setStr(f.calc.next, n) : "0: stop", rule: true },
+      { key: "nx", label: "next", bits: toBits(f.calc.next, n), tone: "res", value: f.calc.next ? sv(f.calc.next) : (narrow ? "0" : "0: stop"), rule: true },
     );
   } else {
-    rows.push({ key: "sub", label: "sub", bits: toBits(f.sub, n), tone: "res", value: f.sub ? setStr(f.sub, n) : "0: stop", rule: true, fade: outside });
+    rows.push({ key: "sub", label: "sub", bits: toBits(f.sub, n), tone: "res", value: f.sub ? sv(f.sub) : (narrow ? "0" : "0: stop"), rule: true, fade: outside });
   }
   const total = 2 ** toBits(mask, n).filter(Boolean).length - 1;
 

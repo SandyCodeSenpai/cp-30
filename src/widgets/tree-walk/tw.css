@@ -1,0 +1,62 @@
+/* tree-walk lab. Tokens only. Prefix: tw- */
+.tw-stage { display: flex; flex-direction: column; gap: 4px; }
+.tw-title { font-size: 14px; line-height: 20px; font-weight: 600; color: var(--ink-2); margin-right: auto; }
+.tw-stat { font-size: 13px; line-height: 20px; color: var(--muted); font-variant-numeric: tabular-nums; white-space: nowrap; }
+.tw-stat b { color: var(--ink); font-weight: 700; font-size: 15px; transition: color var(--dur) var(--ease-color); }
+.tw-stat.good b { color: var(--good-ink); }
+.tw-sub { flex-basis: 100%; min-width: 0; overflow-x: auto; scrollbar-width: none; }
+.tw-sub .ui-seg { display: flex; flex-direction: row; align-items: center; gap: 8px; }
+.tw-sub .ui-seg-label { font-size: 13px; color: var(--muted); font-weight: 500; white-space: nowrap; }
+.tw-sub .ui-seg-track { width: max-content; flex-wrap: nowrap; }
+@container (max-width: 480px) { .tw-sub .ui-seg { flex-direction: column; align-items: flex-start; gap: 4px; } }
+.tw-sub .ui-seg-track button { min-height: 30px; padding: 4px 10px; font-size: 13px; }
+.tw-body { display: grid; grid-template-columns: minmax(0, 1fr); gap: 4px; min-width: 0; }
+@container (min-width: 600px) { .tw-body { grid-template-columns: minmax(0, 1fr) 190px; align-items: start; } }
+.tw-treebox { min-width: 0; overflow: hidden; }
+.tw-panel { display: flex; flex-direction: column; gap: 10px; padding: 8px 14px 12px; min-width: 0; }
+@container (min-width: 600px) { .tw-panel { padding: 12px 14px 12px 0; } }
+.tw-list { display: flex; flex-direction: column; gap: 6px; min-width: 0; }
+.tw-list-head { display: flex; align-items: baseline; gap: 8px; }
+.tw-list-name { font-family: var(--font-mono); font-size: 13px; font-weight: 600; color: var(--muted); }
+.tw-list-note { font-size: 12px; color: var(--muted); }
+.tw-list-items { display: flex; flex-wrap: wrap; gap: 4px; min-height: 28px; align-items: center; }
+.tw-list.vertical .tw-list-items { flex-direction: column; align-items: stretch; flex-wrap: nowrap; }
+.tw-list.vertical .tw-item { justify-content: start; place-items: center start; }
+.rx-box.open { border-color: var(--accent); background: transparent; color: var(--accent-text); }
+
+/* tree */
+.tw-band { fill: var(--accent-soft); opacity: .7; }
+.tw-band-label { font-size: 12px; font-weight: 600; fill: var(--accent-text); }
+.tw-edge { stroke: var(--muted); stroke-width: 1.5; transition: stroke var(--dur) var(--ease-color), opacity var(--dur) var(--ease-color); }
+.tw-edge.hot { stroke: var(--accent); stroke-width: 2.5; }
+.tw-edge.dim { opacity: .3; }
+.tw-ghost-edge { stroke: var(--muted); stroke-width: 1.5; stroke-dasharray: 3 3; }
+.tw-ghost { fill: var(--surface); stroke: var(--muted); stroke-width: 1.5; stroke-dasharray: 3 3; }
+.tw-ghost-text { font-family: var(--font-mono); font-size: 12px; fill: var(--muted); }
+.tw-circle { fill: var(--surface); stroke: var(--muted); stroke-width: 1.5; transition: fill var(--dur) var(--ease-color), stroke var(--dur) var(--ease-color); }
+.tw-val { font-family: var(--font-body); font-weight: 700; fill: var(--ink); transition: fill var(--dur) var(--ease-color); }
+.tw-halo { fill: none; stroke: var(--accent); stroke-opacity: .28; stroke-width: 4; }
+.tw-node { transition: opacity var(--dur) var(--ease-color); }
+.tw-node.s-queued .tw-circle { stroke: var(--accent); stroke-dasharray: 4 3; stroke-width: 2; }
+.tw-node.s-open .tw-circle { fill: var(--accent-soft); stroke: var(--accent); }
+.tw-node.s-open .tw-val { fill: var(--accent-text); }
+.tw-node.s-act .tw-circle { fill: var(--accent); stroke: var(--accent); }
+.tw-node.s-act .tw-val { fill: var(--accent-ink); }
+.tw-node.s-done .tw-circle { fill: var(--surface-3); stroke: var(--surface-3); }
+.tw-node.s-good .tw-circle { fill: var(--good-soft); stroke: var(--good); stroke-width: 2; }
+.tw-node.s-good .tw-val { fill: var(--good-ink); }
+.tw-node.s-bad .tw-circle { fill: var(--bad-soft); stroke: var(--bad); stroke-width: 2; }
+.tw-node.s-bad .tw-val { fill: var(--bad-ink); }
+.tw-node.s-dim { opacity: .3; }
+.tw-badge-bg { fill: var(--surface); stroke: var(--line); stroke-width: 1; }
+.tw-badge-bg.good { stroke: var(--good); }
+.tw-badge-bg.bad { stroke: var(--bad); }
+.tw-badge { font-family: var(--font-mono); font-size: 12px; font-weight: 600; fill: var(--ink-2); }
+.tw-flow rect { fill: var(--accent); }
+.tw-flow text { font-family: var(--font-mono); font-size: 12px; font-weight: 700; fill: var(--accent-ink); }
+.tw-flow.bad rect { fill: var(--bad); }
+
+/* legend extras */
+.rx-legend i.tw-q { border-color: var(--accent); border-style: dashed; }
+.rx-legend i.tw-done { background: var(--surface-3); border-color: var(--surface-3); }
+.rx-legend i.tw-dim { opacity: .4; border-color: var(--muted); }

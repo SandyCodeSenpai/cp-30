@@ -98,3 +98,6 @@
 .nt-pair { display: flex; align-items: baseline; gap: 10px; font-family: var(--font-mono); font-variant-numeric: tabular-nums; }
 .nt-pair .p { font-size: 28px; line-height: 34px; font-weight: 700; color: var(--ink); }
 .nt-pair .l { font-size: 13px; color: var(--muted); font-family: var(--font-body); font-weight: 600; }
+.nt-inner > .bk-var, .nt-inner > .bt-hint { align-self: flex-start; }
+.nt-cell.tiny.withspf .nt-num { position: absolute; top: 2px; left: 4px; transform: none; font-size: 12px; line-height: 13px; }
+.nt-cell.tiny .nt-spf { bottom: 2px; right: 3px; }

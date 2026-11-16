@@ -32,7 +32,7 @@ function Single({ tabs, sub, onComplete }: { tabs?: ReactNode; sub: ReactNode; o
   const w = widthOf(nums);
   const narrow = avail < 440;
   const labelW = narrow ? 50 : 64, valueW = 40;
-  const cell = cellSize(avail, w, labelW, valueW, 36, 18);
+  const cell = cellSize(avail, w, labelW, valueW + 10, 36, 20);
   const x = f.i >= 0 && f.i < nums.length ? nums[f.i] : null;
   const rows: GridRow[] = x !== null
     ? [
@@ -107,7 +107,7 @@ function Prefix({ tabs, sub, onComplete }: { tabs?: ReactNode; sub: ReactNode; o
   const w = widthOf([...a, ...px]);
   const narrow = avail < 440;
   const labelW = narrow ? 64 : 78, valueW = 40;
-  const cell = cellSize(avail, w, labelW, valueW, 36, 18);
+  const cell = cellSize(avail, w, labelW, valueW + 10, 36, 20);
   const [l, r] = q;
   let rows: GridRow[];
   if (f.query) {
