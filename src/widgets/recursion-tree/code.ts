@@ -1,0 +1,125 @@
+/** Python templates shown beside the call tree. Subsets, combinations and permutations are copied from Day 10;
+ *  the memo template follows Day 15 (@cache, top-down first). */
+
+export const SUBSETS = [
+  "# Subsets: take / skip",
+  "def subsets(nums):",
+  "    res, path = [], []",
+  "    def dfs(i):",
+  "        if i == len(nums):",
+  "            res.append(path[:])   # copy! path keeps changing",
+  "            return",
+  "        path.append(nums[i])      # choose",
+  "        dfs(i + 1)                # recurse",
+  "        path.pop()                # undo",
+  "        dfs(i + 1)                # skip",
+  "    dfs(0)",
+  "    return res",
+];
+
+export const PERMUTE = [
+  "# Permutations with a used[] array",
+  "def permute(nums):",
+  "    res, path, used = [], [], [False] * len(nums)",
+  "    def dfs():",
+  "        if len(path) == len(nums):",
+  "            res.append(path[:])",
+  "            return",
+  "        for i, x in enumerate(nums):",
+  "            if used[i]:",
+  "                continue",
+  "            used[i] = True",
+  "            path.append(x)",
+  "            dfs()",
+  "            path.pop()",
+  "            used[i] = False",
+  "    dfs()",
+  "    return res",
+];
+
+export const COMBO = [
+  "# Combinations with a start index + duplicate skipping (input sorted)",
+  "def combo_sum_unique(cands, target):",
+  "    cands.sort()",
+  "    res, path = [], []",
+  "    def dfs(start, remain):",
+  "        if remain == 0:",
+  "            res.append(path[:])",
+  "            return",
+  "        for j in range(start, len(cands)):",
+  "            if j > start and cands[j] == cands[j - 1]:",
+  "                continue          # same value at same depth = duplicate branch",
+  "            if cands[j] > remain:",
+  "                break             # sorted, so everything after is too big",
+  "            path.append(cands[j])",
+  "            dfs(j + 1, remain - cands[j])   # j + 1: each item used once",
+  "            path.pop()",
+  "    dfs(0, target)",
+  "    return res",
+];
+
+/** The same search with the cut removed: a branch learns it went over only after the call. */
+export const COMBO_NOCUT = [
+  "# The same search WITHOUT the cut (no break)",
+  "def combo_sum_unique(cands, target):",
+  "    cands.sort()",
+  "    res, path = [], []",
+  "    def dfs(start, remain):",
+  "        if remain < 0:",
+  "            return            # too late: found out after the call",
+  "        if remain == 0:",
+  "            res.append(path[:])",
+  "            return",
+  "        for j in range(start, len(cands)):",
+  "            if j > start and cands[j] == cands[j - 1]:",
+  "                continue          # same value at same depth = duplicate branch",
+  "            path.append(cands[j])",
+  "            dfs(j + 1, remain - cands[j])   # j + 1: each item used once",
+  "            path.pop()",
+  "    dfs(0, target)",
+  "    return res",
+];
+
+export const STAIRS = [
+  "from functools import cache",
+  "",
+  "@cache                    # memo: store f(i) after the first call",
+  "def f(i):                 # ways to climb i stairs, 1 or 2 at a time",
+  "    if i <= 1:",
+  "        return 1",
+  "    return f(i - 1) + f(i - 2)",
+  "",
+  "f(n)",
+];
+
+export const FIB = [
+  "from functools import cache",
+  "",
+  "@cache                    # memo: store fib(i) after the first call",
+  "def fib(i):               # 0, 1, 1, 2, 3, 5, 8, ...",
+  "    if i < 2:",
+  "        return i",
+  "    return fib(i - 1) + fib(i - 2)",
+  "",
+  "fib(n)",
+];
+
+export const QUEENS = [
+  "# N-Queens: one queen per row, three sets of attacked keys",
+  "def solve_n_queens(n):",
+  "    res, queen = [], [-1] * n      # queen[r] = column in row r",
+  "    cols, d1, d2 = set(), set(), set()",
+  "    def dfs(r):",
+  "        if r == n:",
+  "            res.append(queen[:])",
+  "            return",
+  "        for c in range(n):",
+  "            if c in cols or r - c in d1 or r + c in d2:",
+  "                continue           # attacked: cut this branch",
+  "            queen[r] = c",
+  "            cols.add(c); d1.add(r - c); d2.add(r + c)     # place",
+  "            dfs(r + 1)",
+  "            cols.remove(c); d1.remove(r - c); d2.remove(r + c)  # undo",
+  "    dfs(0)",
+  "    return res",
+];

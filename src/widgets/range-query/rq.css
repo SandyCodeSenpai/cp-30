@@ -1,0 +1,106 @@
+/* Range-query lab pictures. Tokens only. */
+
+/* ---------- Fenwick ---------- */
+.fw-wrap { min-width: 0; }
+.fw-lab { fill: var(--muted); font-size: 12px; font-weight: 600; font-family: var(--font-mono); }
+.fw-idx { fill: var(--ink-2); font-size: 13px; font-weight: 600; font-family: var(--font-mono); }
+.fw-idx.on { fill: var(--accent-text); }
+.fw-bin { fill: var(--muted); font-size: 12px; font-family: var(--font-mono); letter-spacing: -.02em; }
+.fw-bin.on { fill: var(--accent-text); }
+.fw-ipill { fill: var(--accent-soft); stroke: var(--accent); stroke-width: 1.5; }
+.fw-cell { fill: var(--surface); stroke: var(--line); stroke-width: 1.5; transition: fill var(--dur) var(--ease-color), stroke var(--dur) var(--ease-color); }
+.fw-cell.plus { fill: var(--good-soft); stroke: var(--good); }
+.fw-cell.minus { fill: var(--warn-soft); stroke: var(--warn); stroke-dasharray: 4 3; }
+.fw-cell.flash { stroke: var(--accent); stroke-width: 2.5; }
+.fw-val { fill: var(--ink); font-size: 15px; font-weight: 600; font-family: var(--font-mono); }
+.fw-bar rect { fill: var(--surface-2); stroke: var(--line); stroke-width: 1.5; transition: fill var(--dur) var(--ease-color), stroke var(--dur) var(--ease-color), opacity var(--dur) var(--ease-color); }
+.fw-bar text { transition: opacity var(--dur) var(--ease-color); }
+.fw-bar.dim rect, .fw-bar.dim text { opacity: .5; }
+.fw-bar.trail rect { stroke: var(--accent); }
+.fw-bar.plus rect, .fw-bar.changed rect { fill: var(--good-soft); stroke: var(--good); }
+.fw-bar.minus rect { fill: var(--warn-soft); stroke: var(--warn); }
+.fw-bar.hot rect { fill: var(--accent-soft); stroke: var(--accent); stroke-width: 2.5; }
+.fw-bar rect.fw-pulse { fill: var(--accent); stroke: none; }
+.fw-tlab { fill: var(--muted); font-size: 12px; font-weight: 600; font-family: var(--font-mono); }
+.fw-tval { fill: var(--ink); font-size: 14px; font-weight: 700; font-family: var(--font-mono); }
+.fw-bar.hot .fw-tval { fill: var(--accent-text); }
+.fw-bar.hot .fw-tlab { fill: var(--accent-text); }
+.fw-arc path { fill: none; stroke: var(--muted); stroke-width: 1.5; stroke-dasharray: 4 4; opacity: .7; }
+.fw-arc.cur path { stroke: var(--accent); stroke-width: 2.25; stroke-dasharray: none; opacity: 1; }
+.fw-head { fill: var(--accent); }
+.fw-head-dim { fill: var(--muted); }
+.fw-arc-pill { fill: var(--accent); }
+.fw-arc-txt { fill: var(--accent-ink); font-size: 12px; font-weight: 700; font-family: var(--font-mono); }
+.fw-foot { display: flex; flex-direction: column; gap: 8px; margin-top: 8px; }
+.fw-strip { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 8px; font-family: var(--font-mono); font-size: 13px; color: var(--ink-2); min-height: 28px; }
+.fw-sk { color: var(--muted); font-weight: 600; }
+.fw-bits { display: inline-flex; gap: 2px; }
+.fw-bit { display: inline-grid; place-items: center; width: 18px; height: 24px; border-radius: 5px; background: var(--surface-2); color: var(--muted); font-weight: 600; font-variant-numeric: tabular-nums; }
+.fw-bit.one { color: var(--ink); background: var(--surface-3); }
+.fw-bit.low { background: var(--accent); color: var(--accent-ink); }
+.fw-eq { color: var(--ink-2); font-variant-numeric: tabular-nums; }
+.fw-eq.strong { color: var(--accent-text); font-weight: 700; }
+.fw-op { color: var(--muted); font-weight: 700; padding: 0 2px; }
+.fw-note { font-family: var(--font-body); color: var(--muted); font-size: 13px; }
+.rq-tab { font-variant-numeric: tabular-nums; color: var(--ink); }
+
+/* ---------- Segment tree ---------- */
+.sg-wrap { min-width: 0; }
+.sg-edge { stroke: var(--line); stroke-width: 1.5; transition: stroke var(--dur) var(--ease-color); }
+.sg-edge.on { stroke: var(--accent); stroke-width: 2.25; }
+.sg-link { fill: none; stroke: var(--line); stroke-width: 1.25; stroke-dasharray: 3 4; }
+.sg-node rect { fill: var(--surface); stroke: var(--line); stroke-width: 1.5; transition: fill var(--dur) var(--ease-color), stroke var(--dur) var(--ease-color), opacity var(--dur) var(--ease-color); }
+.sg-node.leaf rect { fill: var(--surface-2); }
+.sg-node text { transition: opacity var(--dur) var(--ease-color); }
+.sg-val { fill: var(--ink); font-size: 14px; font-weight: 700; font-family: var(--font-mono); }
+.sg-idx { fill: var(--muted); font-size: 12px; font-weight: 500; font-family: var(--font-mono); }
+.sg-node.unbuilt .sg-val { fill: var(--muted); font-weight: 500; }
+.sg-node.unbuilt rect { stroke-dasharray: 4 3; }
+.sg-node.rel-part rect { fill: var(--warn-soft); stroke: var(--warn); stroke-dasharray: 4 3; }
+.sg-node.rel-full rect { fill: color-mix(in srgb, var(--good-soft) 55%, var(--surface)); }
+.sg-node.rel-out rect, .sg-node.rel-out text { opacity: .42; }
+.sg-node.visited rect { stroke: var(--accent); stroke-width: 2.25; stroke-dasharray: none; opacity: 1; }
+.sg-node.visited text { opacity: 1; }
+.sg-node.kid rect { stroke: var(--accent); stroke-width: 2.25; stroke-dasharray: none; }
+.sg-node.changed rect, .sg-node.used rect { fill: var(--good-soft); stroke: var(--good); stroke-width: 2; stroke-dasharray: none; opacity: 1; }
+.sg-node.used .sg-val, .sg-node.changed .sg-val { fill: var(--good-ink); }
+.sg-node.hot rect { fill: var(--accent-soft); stroke: var(--accent); stroke-width: 2.5; stroke-dasharray: none; opacity: 1; }
+.sg-node.hot .sg-val { fill: var(--accent-text); }
+.sg-node.hot text, .sg-node.used text, .sg-node.ptr text { opacity: 1; }
+.sg-node rect.sg-pulse { fill: var(--accent); stroke: none; }
+.sg-ptr { fill: var(--accent); }
+.sg-ptr-t { fill: var(--accent-ink); font-size: 12px; font-weight: 700; font-family: var(--font-mono); }
+.sg-rline { stroke: var(--accent); stroke-width: 2; stroke-dasharray: 3 3; }
+.sg-cell { fill: var(--surface); stroke: var(--line); stroke-width: 1.5; transition: fill var(--dur) var(--ease-color), stroke var(--dur) var(--ease-color); }
+.sg-cell.inq { fill: var(--accent-soft); stroke: var(--accent); }
+.sg-cell.chg { fill: var(--good-soft); stroke: var(--good); }
+.sg-aidx { fill: var(--muted); font-size: 12px; font-family: var(--font-mono); }
+.sg-brk { fill: none; stroke: var(--accent); stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+
+/* ---------- Coordinate compression ---------- */
+.cp-cell { fill: var(--surface); stroke: var(--line); stroke-width: 1.5; transition: fill var(--dur) var(--ease-color), stroke var(--dur) var(--ease-color), opacity var(--dur) var(--ease-color); }
+.cp-cell.dup { fill: var(--surface-2); stroke-dasharray: 4 3; }
+.cp-cell.cur { fill: var(--accent-soft); stroke: var(--accent); stroke-width: 2.5; }
+.cp-cell.le { fill: var(--good-soft); stroke: var(--good); }
+.cp-cell.gt { fill: var(--warn-soft); stroke: var(--warn); }
+.cp-val { fill: var(--ink); font-size: 14px; font-weight: 600; font-family: var(--font-mono); }
+.cp-val.dup { fill: var(--muted); }
+.cp-strike { stroke: var(--muted); stroke-width: 1.5; }
+.cp-rank { fill: var(--surface-2); stroke: var(--line); stroke-width: 1.25; transition: fill var(--dur) var(--ease-color), stroke var(--dur) var(--ease-color); }
+.cp-rank.empty { fill: none; stroke-dasharray: 3 3; }
+.cp-rank.cur { fill: var(--accent); stroke: var(--accent); }
+.cp-rank-t { fill: var(--ink); font-size: 13px; font-weight: 700; font-family: var(--font-mono); }
+.cp-rank.cur + .cp-rank-t { fill: var(--accent-ink); }
+.cp-flow { fill: none; stroke: var(--muted); stroke-width: 1.25; stroke-dasharray: 3 4; opacity: .8; }
+.cp-flow.cur { stroke: var(--accent); stroke-width: 2.25; stroke-dasharray: none; opacity: 1; }
+.cp-v { fill: var(--surface); stroke: var(--line); stroke-width: 1.5; transition: fill var(--dur) var(--ease-color), stroke var(--dur) var(--ease-color); }
+.cp-v.cur { fill: var(--accent-soft); stroke: var(--accent); stroke-width: 2.5; }
+.cp-rlab { fill: var(--muted); font-size: 12px; font-weight: 600; font-family: var(--font-mono); }
+.cp-rlab.cur { fill: var(--accent-text); }
+.cp-bar rect { fill: var(--surface-3); transition: fill var(--dur) var(--ease-color), y var(--dur) var(--ease), height var(--dur) var(--ease); }
+.cp-bar.le rect { fill: var(--good); }
+.cp-bar.gt rect { fill: var(--warn); }
+.cp-bar.add rect { fill: var(--accent); }
+.cp-bar rect.cp-pulse { fill: var(--accent); }
+.cp-cnt { fill: var(--ink-2); font-size: 12px; font-weight: 600; font-family: var(--font-mono); }
+.cp-split { stroke: var(--accent); stroke-width: 1.5; stroke-dasharray: 4 4; }

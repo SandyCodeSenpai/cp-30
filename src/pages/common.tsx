@@ -1,5 +1,4 @@
 import { Component, useEffect, useState, type CSSProperties, type ErrorInfo, type ReactNode } from "react";
-import { motion } from "framer-motion";
 import { Chip, Icon, springs } from "@/ui";
 import type { WidgetMeta } from "@/widgets/registry";
 import { useReducedMotion } from "@/lib/hooks";
@@ -44,37 +43,6 @@ export function LabCard({ w, done, compact, hideChapter }: { w: WidgetMeta; done
       <span className="lab-card-go">Open lab<Icon name="arrow-right" size={16} stroke={2} /></span>
     </a>
   );
-}
-
-/** Small animated schematic of the delivery chain for the Playground card. */
-export function ChainArt() {
-  const reduce = useReducedMotion();
-  const nodes = [
-    { x: 40, label: "Viewer" }, { x: 150, label: "Edge" }, { x: 260, label: "Shield" }, { x: 370, label: "Origin" },
-  ];
-  return (
-    <svg className="chain-art" viewBox="0 0 410 120" role="img" aria-label="A request travels from the viewer to the edge, the shield and the origin">
-      <line x1={40} x2={370} y1={52} y2={52} className="chain-line" />
-      {nodes.map((n, i) => (
-        <g key={n.label} transform={`translate(${n.x} 52)`}>
-          <rect x={-26} y={-22} width={52} height={44} rx={13} className={`chain-node${i === 1 ? " hot" : ""}`} />
-          <ChainGlyph i={i} />
-          <text y={44} textAnchor="middle" className="chain-label">{n.label}</text>
-        </g>
-      ))}
-      {!reduce && (
-        <motion.circle r={5} cy={52} className="chain-packet"
-          initial={{ cx: 66, opacity: 0 }} animate={{ cx: [66, 124, 176, 234, 286, 344, 286, 234, 176, 124, 66], opacity: [0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0] }}
-          transition={{ duration: 4.2, ease: "easeInOut", repeat: Infinity, repeatDelay: 1.2 }} />
-      )}
-    </svg>
-  );
-}
-function ChainGlyph({ i }: { i: number }) {
-  const p = { fill: "none", strokeWidth: 1.75, strokeLinecap: "round" as const, strokeLinejoin: "round" as const, className: "chain-glyph" };
-  if (i === 0) return <g {...p}><rect x={-10} y={-9} width={20} height={13} rx={2.5} /><path d="M-4 8h8" /></g>;
-  if (i === 3) return <g {...p}><ellipse cx={0} cy={-7} rx={9} ry={3.5} /><path d="M-9 -7v12c0 2 4 3.5 9 3.5s9-1.5 9-3.5v-12" /></g>;
-  return <g {...p}><rect x={-10} y={-10} width={20} height={8} rx={2} /><rect x={-10} y={1} width={20} height={8} rx={2} /><path d="M-6 -6h.01M-6 5h.01" /></g>;
 }
 
 /** Count-up number for stats (respects reduced motion). */

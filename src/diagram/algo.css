@@ -1,0 +1,160 @@
+/* Algorithm visuals: array, grid, tree, graph. Tokens only. */
+.dg-algo {
+  --dg-c-t: 240ms;
+  --dg-ring: var(--line);
+  background: var(--surface);
+  border: 1px solid var(--line); border-radius: 20px;
+  padding: 22px 14px 20px; min-width: 0;
+}
+.dg-algo-host { width: 100%; min-width: 0; }
+.dg-algo-inner { position: relative; }
+.dg-algo .dg-scroll.is-overflow { padding-bottom: 8px; }
+.dg-algo .dg-scroll:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; border-radius: 8px; }
+
+/* tone palette shared by cells, tree nodes and graph nodes */
+.dg-algo .tone-good   { --t: var(--good);   --t-soft: var(--good-soft);   --t-ink: var(--good-ink); }
+.dg-algo .tone-bad    { --t: var(--bad);    --t-soft: var(--bad-soft);    --t-ink: var(--bad-ink); }
+.dg-algo .tone-warn   { --t: var(--warn);   --t-soft: var(--warn-soft);   --t-ink: var(--warn-ink); }
+.dg-algo .tone-accent { --t: var(--accent); --t-soft: var(--accent-soft); --t-ink: var(--accent-text); }
+.dg-algo .tone-neutral { --t: var(--muted); --t-soft: var(--surface-2);   --t-ink: var(--muted); }
+
+/* ---------------- cells (array + grid) ---------------- */
+.dg-arr, .dg-grid { position: relative; transition: height var(--dur-slow) var(--ease); }
+.dg-cell {
+  position: absolute; display: grid; place-items: center; box-sizing: border-box;
+  border-radius: var(--cell-r, 10px);
+  background: var(--surface); color: var(--ink);
+  box-shadow: inset 0 0 0 1px var(--dg-ring), 0 1px 1.5px color-mix(in srgb, var(--ink) 5%, transparent);
+  font-family: var(--font-body); font-weight: 600; font-variant-numeric: tabular-nums; line-height: 1;
+  letter-spacing: -.01em; white-space: nowrap;
+  transition: background-color var(--dg-c-t) var(--ease-color), box-shadow var(--dg-c-t) var(--ease-color), color var(--dg-c-t) var(--ease-color),
+    left var(--dur-slow) var(--ease), top var(--dur-slow) var(--ease), width var(--dur-slow) var(--ease);
+}
+.dg-cell[class*="tone-"] {
+  background: var(--t-soft); color: var(--t-ink);
+  box-shadow: inset 0 0 0 1.5px color-mix(in srgb, var(--t) 62%, transparent);
+}
+.dg-cell.tone-neutral { box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--line) 60%, transparent); }
+.dg-cell.is-empty { background: transparent; box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--muted) 28%, transparent); }
+.dg-cell.is-empty[class*="tone-"] { background: color-mix(in srgb, var(--t-soft) 70%, transparent); }
+.dg-cell.is-wall {
+  background: color-mix(in srgb, var(--muted) 58%, var(--surface-3));
+  box-shadow: none; color: transparent;
+}
+.dg-cell-v { display: block; }
+.dg-cell-v.is-mono { font-family: var(--font-mono); font-weight: 500; letter-spacing: 0; }
+.dg-cell-v.is-pop { animation: dg-pop 480ms var(--ease) both; }
+.dg-ripple {
+  position: absolute; inset: 0; border-radius: inherit; pointer-events: none;
+  animation: dg-ripple 760ms var(--ease) both;
+}
+@keyframes dg-pop { 0% { opacity: 0; transform: scale(.55); } 55% { opacity: 1; transform: scale(1.14); } 100% { transform: scale(1); } }
+@keyframes dg-ripple {
+  0% { box-shadow: 0 0 0 0 color-mix(in srgb, currentColor 38%, transparent); }
+  100% { box-shadow: 0 0 0 9px color-mix(in srgb, currentColor 0%, transparent); }
+}
+
+/* ---------------- array ---------------- */
+.dg-arr-idx {
+  position: absolute; height: 16px; text-align: center;
+  font-size: 12px; line-height: 16px; font-weight: 500; color: var(--muted); font-variant-numeric: tabular-nums;
+}
+.dg-arr-label {
+  position: absolute; display: flex; align-items: center; justify-content: flex-end;
+  font-family: var(--font-mono); font-size: 13px; font-weight: 500; color: var(--muted); white-space: nowrap;
+}
+.dg-arr-label.is-above { justify-content: flex-start; height: 16px; line-height: 16px; }
+
+.dg-range-band {
+  position: absolute; border-radius: calc(var(--cell-r, 10px) + 3px);
+  --t: var(--accent);
+  background: color-mix(in srgb, var(--t) 9%, transparent);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--t) 28%, transparent);
+  transition: background-color var(--dg-c-t) var(--ease-color), box-shadow var(--dg-c-t) var(--ease-color);
+}
+.dg-range {
+  position: absolute; height: 6px; box-sizing: border-box;
+  --t: var(--accent); --t-ink: var(--accent-text);
+  border: 1.5px solid color-mix(in srgb, var(--t) 75%, transparent); border-bottom: 0;
+  border-radius: 4px 4px 0 0;
+  transition: border-color var(--dg-c-t) var(--ease-color);
+}
+.dg-range-label {
+  position: absolute; left: 50%; bottom: 7px; transform: translateX(-50%);
+  font-size: 12px; line-height: 15px; font-weight: 600; color: var(--t-ink); white-space: nowrap;
+  transition: color var(--dg-c-t) var(--ease-color);
+}
+
+.dg-ptr { position: absolute; width: 0; display: flex; flex-direction: column; align-items: center; --t: var(--accent); --t-soft: var(--accent-soft); --t-ink: var(--accent-text); }
+.dg-ptr-caret { flex: none; display: block; margin-bottom: 1px; transition: opacity var(--dur) var(--ease-color); }
+.dg-ptr-caret path { fill: var(--t); transition: fill var(--dg-c-t) var(--ease-color); }
+.dg-ptr-chip {
+  flex: none; height: 20px; min-width: 20px; padding: 0 7px; box-sizing: border-box; border-radius: 999px;
+  display: inline-flex; align-items: center; justify-content: center;
+  font-size: 12px; font-weight: 700; letter-spacing: .01em; white-space: nowrap; font-variant-numeric: tabular-nums;
+  color: var(--t-ink); background: var(--t-soft);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--t) 35%, transparent), 0 0 0 2px var(--surface);
+  transition: background-color var(--dg-c-t) var(--ease-color), color var(--dg-c-t) var(--ease-color), box-shadow var(--dg-c-t) var(--ease-color);
+}
+.dg-ptr.tone-neutral { --t: var(--muted); --t-soft: var(--surface-3); --t-ink: var(--ink-2); }
+
+/* ---------------- grid ---------------- */
+.dg-grid-lab {
+  position: absolute; display: flex; align-items: center; justify-content: center;
+  font-family: var(--font-mono); font-size: 13px; font-weight: 500; color: var(--muted); white-space: nowrap;
+}
+.dg-grid-lab.is-row { justify-content: flex-end; }
+.dg-arrows { position: absolute; inset: 0; overflow: visible; pointer-events: none; }
+.dg-arrow { --a: color-mix(in srgb, var(--ink-2) 72%, transparent); }
+.dg-arrow.tone-good { --a: var(--good); } .dg-arrow.tone-bad { --a: var(--bad); }
+.dg-arrow.tone-warn { --a: var(--warn); } .dg-arrow.tone-accent { --a: var(--accent); }
+.dg-arrow.tone-neutral { --a: color-mix(in srgb, var(--muted) 70%, transparent); }
+.dg-arrow-line { fill: none; stroke: var(--a); stroke-width: 1.75; stroke-linecap: round; transition: stroke var(--dg-c-t) var(--ease-color); }
+.dg-arrow-halo { fill: none; stroke: var(--surface); stroke-width: 5; stroke-linecap: round; opacity: .85; }
+.dg-arrow-head { fill: var(--a); stroke: var(--a); stroke-width: 1; stroke-linejoin: round; transition: fill var(--dg-c-t) var(--ease-color), stroke var(--dg-c-t) var(--ease-color); }
+
+/* ---------------- tree + graph ---------------- */
+.dg-tree, .dg-graph { position: relative; display: block; overflow: visible; }
+.dg-tree text, .dg-graph text { font-family: var(--font-body); }
+.dg-t-edge { stroke: color-mix(in srgb, var(--muted) 62%, transparent); stroke-width: 1.75; stroke-linecap: round; fill: none; }
+.dg-t-node circle, .dg-g-node .dg-g-shape {
+  fill: var(--surface); stroke: color-mix(in srgb, var(--muted) 55%, var(--line)); stroke-width: 1.5;
+  transition: fill var(--dg-c-t) var(--ease-color), stroke var(--dg-c-t) var(--ease-color), stroke-width var(--dg-c-t) var(--ease-color);
+}
+.dg-t-node[class*="tone-"] circle, .dg-g-node[class*="tone-"] .dg-g-shape { fill: var(--t-soft); stroke: var(--t); stroke-width: 2; }
+.dg-t-node.tone-neutral circle, .dg-g-node.tone-neutral .dg-g-shape { stroke: color-mix(in srgb, var(--muted) 45%, var(--line)); stroke-width: 1.5; }
+.dg-t-val, .dg-g-label {
+  fill: var(--ink); font-size: 15px; font-weight: 600; font-variant-numeric: tabular-nums;
+  text-anchor: middle; dominant-baseline: central;
+  transition: fill var(--dg-c-t) var(--ease-color);
+}
+.dg-t-val.is-mono, .dg-g-label.is-mono { font-family: var(--font-mono); font-weight: 500; }
+.dg-t-node[class*="tone-"] .dg-t-val, .dg-g-node[class*="tone-"] .dg-g-label { fill: var(--t-ink); }
+.dg-t-node.tone-neutral .dg-t-val, .dg-g-node.tone-neutral .dg-g-label { fill: var(--muted); }
+.dg-svg-pop { transform-box: fill-box; transform-origin: center; animation: dg-pop 480ms var(--ease) both; }
+.dg-svg-ripple { fill: none; stroke: var(--t, var(--accent)); stroke-width: 2; transform-box: fill-box; transform-origin: center; animation: dg-svg-ripple 760ms var(--ease) both; }
+@keyframes dg-svg-ripple { 0% { opacity: .5; transform: scale(1); } 100% { opacity: 0; transform: scale(1.45); } }
+
+.dg-note rect { fill: var(--surface-2); stroke: color-mix(in srgb, var(--line) 80%, transparent); stroke-width: 1; transition: fill var(--dg-c-t) var(--ease-color), stroke var(--dg-c-t) var(--ease-color); }
+.dg-note text { fill: var(--ink-2); font-size: 12px; font-weight: 600; font-variant-numeric: tabular-nums; dominant-baseline: central; text-anchor: middle; transition: fill var(--dg-c-t) var(--ease-color); }
+.dg-note[class*="tone-"] rect { fill: var(--t-soft); stroke: color-mix(in srgb, var(--t) 40%, transparent); }
+.dg-note[class*="tone-"] text { fill: var(--t-ink); }
+
+.dg-g-edge { --e: color-mix(in srgb, var(--muted) 70%, transparent); }
+.dg-g-edge.tone-good { --e: var(--good); } .dg-g-edge.tone-bad { --e: var(--bad); }
+.dg-g-edge.tone-warn { --e: var(--warn); } .dg-g-edge.tone-accent { --e: var(--accent); }
+.dg-g-edge.tone-neutral { --e: color-mix(in srgb, var(--muted) 45%, transparent); }
+.dg-g-line { fill: none; stroke: var(--e); stroke-width: 1.75; stroke-linecap: round; transition: stroke var(--dg-c-t) var(--ease-color), stroke-width var(--dg-c-t) var(--ease-color); }
+.dg-g-edge[class*="tone-"]:not(.tone-neutral) .dg-g-line { stroke-width: 2.25; }
+.dg-g-edge.is-dashed .dg-g-line { stroke-dasharray: 5 5; }
+.dg-g-head { fill: var(--e); stroke: var(--e); stroke-width: 1; stroke-linejoin: round; transition: fill var(--dg-c-t) var(--ease-color), stroke var(--dg-c-t) var(--ease-color); }
+.dg-g-w rect { fill: var(--surface); stroke: color-mix(in srgb, var(--line) 90%, transparent); stroke-width: 1; }
+.dg-g-w text { fill: var(--ink-2); font-size: 12px; font-weight: 600; font-variant-numeric: tabular-nums; text-anchor: middle; dominant-baseline: central; transition: fill var(--dg-c-t) var(--ease-color); }
+.dg-g-edge[class*="tone-"]:not(.tone-neutral) .dg-g-w text { fill: var(--e); }
+
+.dg-empty { padding: 12px; text-align: center; font-size: 14px; color: var(--muted); }
+
+/* ---------------- narrow + reduced motion ---------------- */
+@media (max-width: 520px) { .dg-algo { padding: 18px 8px 16px; border-radius: 18px; } }
+.dg-algo.is-rm, .dg-algo.is-rm * { transition: none !important; animation: none !important; }
+@media (prefers-reduced-motion: reduce) { .dg-algo, .dg-algo * { transition: none !important; animation: none !important; } }

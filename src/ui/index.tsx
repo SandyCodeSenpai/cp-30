@@ -122,7 +122,7 @@ export function Log({ entries, max = 8, title }: { entries: LogEntry[]; max?: nu
   );
 }
 
-export interface Series { id: string; label: string; color: string; points: [number, number][]; dashed?: boolean; area?: boolean }
+export interface Series { id: string; label: string; color: string; points: [number, number][]; dashed?: boolean; area?: boolean; /** draw a dot on every point (opt-in) */ dots?: boolean }
 /** Minimal responsive SVG line chart. Colors: pass CSS vars like "var(--p2)". */
 export function LineChart(p: {
   series: Series[]; xMax?: number; yMax?: number; xMin?: number; yMin?: number; height?: number;
@@ -156,6 +156,7 @@ export function LineChart(p: {
           return (<g key={s.id}>
             {s.area && <path d={`${d}L${sx(s.points[s.points.length - 1][0])},${sy(yMin)}L${sx(s.points[0][0])},${sy(yMin)}Z`} style={{ fill: s.color, opacity: 0.12 }} />}
             <path d={d} fill="none" style={{ stroke: s.color }} strokeWidth={2.25} strokeDasharray={s.dashed ? "6 5" : undefined} strokeLinejoin="round" strokeLinecap="round" />
+            {s.dots && s.points.map((q, i) => <circle key={i} cx={sx(q[0])} cy={sy(q[1])} r={4} className="ui-chart-dot" style={{ fill: s.color }} />)}
           </g>);
         })}
         {p.xLabel && <text x={W - R} y={H - B - 6} textAnchor="end" className="ui-chart-axis">{p.xLabel}</text>}
@@ -169,7 +170,8 @@ export function LineChart(p: {
 /* ---------------- Added primitives (design lead) ---------------- */
 
 export type IconName = "check" | "x" | "lock" | "chevron-right" | "chevron-left" | "chevron-down" | "search" | "sun" | "moon" | "play" | "pause" | "reset"
-  | "flask" | "book" | "clock" | "bolt" | "target" | "arrow-right" | "home" | "grid" | "list" | "star" | "info" | "external" | "sparkle";
+  | "flask" | "book" | "clock" | "bolt" | "target" | "arrow-right" | "home" | "grid" | "list" | "star" | "info" | "external" | "sparkle"
+  | "calendar" | "timer" | "chart" | "more" | "route" | "download" | "upload" | "trash" | "plus" | "repeat" | "eye" | "code" | "pencil";
 const ICON_PATHS: Record<IconName, ReactNode> = {
   "check": <path d="M5 12.5l4.5 4.5L19 7.5" />,
   "x": <path d="M6 6l12 12M18 6L6 18" />,
@@ -196,6 +198,19 @@ const ICON_PATHS: Record<IconName, ReactNode> = {
   "info": <><circle cx="12" cy="12" r="8.5" /><path d="M12 11v5.5M12 7.8v.01" /></>,
   "external": <><path d="M13.5 4.5h6v6M19.5 4.5L11 13" /><path d="M18 14v4.5a1.5 1.5 0 01-1.5 1.5h-11A1.5 1.5 0 014 18.5v-11A1.5 1.5 0 015.5 6H10" /></>,
   "sparkle": <path d="M12 3.5l1.8 5.2 5.2 1.8-5.2 1.8L12 17.5l-1.8-5.2L5 10.5l5.2-1.8zM18.5 15.5l.8 2.2 2.2.8-2.2.8-.8 2.2-.8-2.2-2.2-.8 2.2-.8z" />,
+  "calendar": <><rect x="4" y="5.5" width="16" height="14.5" rx="2.5" /><path d="M4 10h16M8.5 3.5v4M15.5 3.5v4" /><path d="M8 14h.01M12 14h.01M16 14h.01" /></>,
+  "timer": <><circle cx="12" cy="13.5" r="7" /><path d="M12 13.5V10M10 3.5h4M18 7.5l1.5-1.5" /></>,
+  "chart": <path d="M4.5 19.5h15M7.5 16v-4.5M12 16V7.5M16.5 16v-7" />,
+  "more": <><circle cx="6" cy="12" r="1.4" fill="currentColor" /><circle cx="12" cy="12" r="1.4" fill="currentColor" /><circle cx="18" cy="12" r="1.4" fill="currentColor" /></>,
+  "route": <><circle cx="6" cy="18" r="2" /><circle cx="18" cy="6" r="2" /><path d="M8 18h7.5a3 3 0 000-6h-7a3 3 0 010-6H16" /></>,
+  "download": <path d="M12 4v11M7.5 10.5L12 15l4.5-4.5M5 19.5h14" />,
+  "upload": <path d="M12 15V4M7.5 8.5L12 4l4.5 4.5M5 19.5h14" />,
+  "trash": <path d="M5 7h14M10 7V5h4v2M7 7l1 12.5h8L17 7" />,
+  "plus": <path d="M12 5v14M5 12h14" />,
+  "repeat": <><path d="M17 3.5l3 3-3 3" /><path d="M4 11.5v-1a4 4 0 014-4h12" /><path d="M7 20.5l-3-3 3-3" /><path d="M20 12.5v1a4 4 0 01-4 4H4" /></>,
+  "eye": <><path d="M2.5 12S6 5.5 12 5.5 21.5 12 21.5 12 18 18.5 12 18.5 2.5 12 2.5 12z" /><circle cx="12" cy="12" r="3" /></>,
+  "code": <path d="M8.5 7L3.5 12l5 5M15.5 7l5 5-5 5" />,
+  "pencil": <path d="M15 5l4 4M4.5 19.5l1-4.5L16 4.5a1.4 1.4 0 012 0l1.5 1.5a1.4 1.4 0 010 2L9 18.5z" />,
 };
 /** Line icon, 24px grid, 1.75px stroke, round caps. Color = currentColor. Decorative unless `label` is given. */
 export function Icon({ name, size = 20, stroke = 1.75, label, style, className }: { name: IconName; size?: number; stroke?: number; label?: string; style?: CSSProperties; className?: string }) {
@@ -247,14 +262,15 @@ export function Eyebrow({ children, dot }: { children: ReactNode; dot?: string }
 
 export const Kbd = ({ children }: { children: ReactNode }) => <kbd className="ui-kbd">{children}</kbd>;
 
-/** Modal sheet: centered dialog on desktop, bottom sheet on phones. Esc and scrim close it; focus is trapped and restored. */
+/** Modal sheet: centered dialog on desktop, bottom sheet on phones. Esc and scrim close it; focus is trapped and restored.
+ *  The first focus goes to an element marked `data-autofocus`, else the first control (mark Cancel in destructive dialogs). */
 export function Sheet({ open, onClose, children, label, width = 560 }: { open: boolean; onClose: () => void; children: ReactNode; label: string; width?: number }) {
   const ref = useRef<HTMLDivElement>(null);
   const reduce = useFmReducedMotion();
   useEffect(() => {
     if (!open) return;
     const prev = document.activeElement as HTMLElement | null;
-    const t = setTimeout(() => { const el = ref.current?.querySelector<HTMLElement>("[autofocus],input,button,[href],[tabindex]:not([tabindex='-1'])"); (el ?? ref.current)?.focus(); }, 20);
+    const t = setTimeout(() => { const el = ref.current?.querySelector<HTMLElement>("[data-autofocus],[autofocus]") ?? ref.current?.querySelector<HTMLElement>("input,button,[href],[tabindex]:not([tabindex='-1'])"); (el ?? ref.current)?.focus(); }, 20);
     const onKey = (e: KeyboardEvent) => {
       if (e.key === "Escape") { e.preventDefault(); onClose(); }
       if (e.key === "Tab" && ref.current) {

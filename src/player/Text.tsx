@@ -2,7 +2,8 @@
  * Lite-markdown renderer shared by the lesson player and pages.
  *   **bold**  *italic*  `code`  "- " bullet lines  blank line = new paragraph
  *   [[term]] and [[shown text|term]] link a glossary entry (case-insensitive; a parenthetical
- *   short form also matches, e.g. [[ABR]] finds "ABR (adaptive bitrate)").
+ *   short form also matches, e.g. [[BFS]] finds "BFS (breadth-first search)").
+ *   [text](#route) links inside the site (same tab); [text](https://...) opens a new tab (rel=noopener).
  * A glossary link renders as a dotted-underline chip: a popover with a fine pointer, a bottom sheet on phones.
  */
 import { useCallback, useEffect, useLayoutEffect, useRef, useState, type ReactNode } from "react";
@@ -15,7 +16,7 @@ import "./text.css";
 
 /* ---------------- Inline parsing ---------------- */
 
-const INLINE = /`([^`]+)`|\[\[([^\]]+?)\]\]|\*\*(.+?)\*\*|\*([^*\s](?:[^*]*?[^*\s])?)\*/g;
+const INLINE = /`([^`]+)`|\[\[([^\]]+?)\]\]|\*\*(.+?)\*\*|\*([^*\s](?:[^*]*?[^*\s])?)\*|\[([^[\]]+)\]\((#[\w-]*|https?:\/\/[^\s)]+)\)/g;
 
 /** Render one line of lite markdown (no paragraphs or bullets). */
 function renderInline(s: string, keyPrefix = "i", links = true): ReactNode[] {
@@ -34,6 +35,13 @@ function renderInline(s: string, keyPrefix = "i", links = true): ReactNode[] {
         : <span key={key} data-glossary-missing={links ? target.trim() : undefined}>{renderInline(shown.trim(), key, links)}</span>);
     } else if (m[3] !== undefined) out.push(<strong key={key}>{renderInline(m[3], key, links)}</strong>);
     else if (m[4] !== undefined) out.push(<em key={key}>{renderInline(m[4], key, links)}</em>);
+    else if (m[5] !== undefined) {
+      const inner = renderInline(m[5], key, false);
+      const href = m[6];
+      if (!links) out.push(<span key={key}>{inner}</span>);
+      else if (href.startsWith("#")) out.push(<a key={key} className="tx-link" href={href}>{inner}</a>);
+      else out.push(<a key={key} className="tx-link ext" href={href} target="_blank" rel="noopener noreferrer">{inner}</a>);
+    }
     last = re.lastIndex;
   }
   if (last < s.length) out.push(s.slice(last));

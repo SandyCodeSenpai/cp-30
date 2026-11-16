@@ -11,7 +11,7 @@ import { WIDGETS } from "@/widgets/registry";
 import { Inline, Text } from "./Text";
 import { shuffledIndexes } from "./grade";
 import { IconBolt, IconCheck, IconExpand, IconFlask, IconSpark, IconX } from "./icons";
-import { WideCtx, splitsVisual } from "./layoutCtx";
+import { HoistCtx, WideCtx, splitsVisual } from "./layoutCtx";
 
 export type Phase = "answer" | "retry" | "done";
 export interface ViewCtx {
@@ -32,15 +32,21 @@ export interface ViewCtx {
 
 /* ---------------- Shared pieces ---------------- */
 
-class Boundary extends Component<{ fallback: ReactNode; children: ReactNode }, { failed: boolean }> {
+class Boundary extends Component<{ fallback: ReactNode; children: ReactNode; resetKey?: unknown }, { failed: boolean }> {
   state = { failed: false };
   static getDerivedStateFromError() { return { failed: true }; }
+  componentDidUpdate(prev: { resetKey?: unknown }) { if (this.state.failed && prev.resetKey !== this.props.resetKey) this.setState({ failed: false }); }
   render() { return this.state.failed ? this.props.fallback : this.props.children; }
 }
 
-/** Visual above the text (capped at 52vh, scroll inside, Expand), or a sticky left column on wide screens. */
+/**
+ * Visual above the text (capped at 52vh, scroll inside, Expand), or a sticky left column on wide screens.
+ * Inside the lesson player (HoistCtx) the player draws the visual itself, so this renders only the text.
+ */
 function StepLayout({ visual, children }: { visual?: VisualT; children: ReactNode }) {
   const wide = useContext(WideCtx);
+  const hoisted = useContext(HoistCtx);
+  if (hoisted) return <>{children}</>;
   if (visual && wide && splitsVisual(visual)) {
     return (
       <div className="lp-split">
@@ -52,7 +58,7 @@ function StepLayout({ visual, children }: { visual?: VisualT; children: ReactNod
   return <>{visual && <VisualFrame visual={visual} mode="stacked" />}{children}</>;
 }
 
-function VisualFrame({ visual, mode }: { visual: VisualT; mode: "split" | "stacked" }) {
+export function VisualFrame({ visual, mode }: { visual: VisualT; mode: "split" | "stacked" }) {
   const frame = useRef<HTMLDivElement>(null);
   const inner = useRef<HTMLDivElement>(null);
   const [over, setOver] = useState(false);
@@ -69,7 +75,7 @@ function VisualFrame({ visual, mode }: { visual: VisualT; mode: "split" | "stack
   return (
     <figure className={`lp-visual ${mode} ${over ? "over" : ""}`}>
       <div ref={frame} className="lp-visual-frame" tabIndex={over ? 0 : undefined} aria-label={over ? "Diagram, scroll to see all of it" : undefined}>
-        <div ref={inner}><Boundary fallback={fail}><Visual visual={visual} /></Boundary></div>
+        <div ref={inner}><Boundary fallback={fail} resetKey={visual}><Visual visual={visual} /></Boundary></div>
       </div>
       {over && (
         <button type="button" data-own-enter="" className="lp-visual-expand" onClick={() => setOpen(true)}>

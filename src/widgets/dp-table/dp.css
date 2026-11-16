@@ -1,0 +1,85 @@
+/* DP table lab. Tokens only. Prefix: dpt- */
+.dpt-stage { padding: 12px; display: flex; flex-direction: column; gap: 10px; }
+.dpt-top { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px 12px; }
+.dpt-title { font-size: 14px; line-height: 20px; font-weight: 600; color: var(--ink); }
+.dpt-result { font-size: 13px; line-height: 18px; color: var(--muted); font-variant-numeric: tabular-nums; }
+.dpt-result b { color: var(--ink); font-weight: 600; }
+.dpt-hint { font-size: 13px; line-height: 18px; color: var(--muted); margin: 0; }
+
+.dpt-scroll { overflow-x: auto; overflow-y: hidden; -webkit-overflow-scrolling: touch; scrollbar-width: thin; padding-bottom: 2px; }
+.ui-stage .dpt-svg { display: block; max-width: none; margin: 0 auto; font-family: var(--font-body); overflow: visible; }
+.dpt-svg text { font-variant-numeric: tabular-nums; }
+
+.dpt-head { fill: var(--muted); font-size: 12px; font-weight: 500; }
+.dpt-head.strong { fill: var(--ink); font-family: var(--font-mono); font-size: 14px; font-weight: 600; }
+.dpt-head.on { fill: var(--accent-text); }
+.dpt-hname { fill: var(--muted); font-size: 12px; font-weight: 600; }
+.dpt-hhi { fill: var(--accent-soft); }
+
+.dpt-cell { fill: var(--surface); stroke: var(--line); stroke-width: 1; transition: fill 180ms var(--ease-color), stroke 180ms var(--ease-color); }
+.dpt-cell.empty { fill: var(--surface); stroke: var(--line-soft); stroke-dasharray: 3 3; }
+.dpt-cell.base { fill: var(--surface-3); stroke: var(--line); stroke-dasharray: none; }
+.dpt-cell.fresh { fill: color-mix(in srgb, var(--accent) 13%, var(--surface)); }
+.dpt-cell.path { fill: var(--accent-soft); stroke: var(--accent); stroke-width: 1.5; }
+.dpt-cell.dep { stroke-width: 2; }
+.dpt-cell.dep.k-pick { stroke: var(--accent); }
+.dpt-cell.dep.k-read { stroke: var(--muted); }
+.dpt-cell.dep.k-bad { stroke: var(--bad); fill: var(--bad-soft); }
+.dpt-cell.dep.k-ok { stroke: var(--good); }
+.dpt-cell.answer.t-good { fill: var(--good-soft); stroke: var(--good); stroke-width: 2; }
+.dpt-cell.answer.t-bad { fill: var(--bad-soft); stroke: var(--bad); stroke-width: 2; }
+.dpt-cell.cur { fill: var(--accent-soft); }
+.dpt-rock-bg { fill: var(--surface-3); }
+.dpt-rock-line { stroke: var(--muted); stroke-width: 2.2; opacity: .55; }
+
+.dpt-val { fill: var(--ink); font-family: var(--font-mono); font-weight: 600; pointer-events: none; }
+.dpt-val.rock { fill: var(--ink-2); }
+.dpt-val.cur { fill: var(--accent-text); }
+
+.dpt-cursor { fill: none; stroke: var(--accent); stroke-width: 2.5; pointer-events: none; }
+.dpt-path { fill: none; stroke: var(--accent); stroke-width: 3; stroke-linecap: round; stroke-linejoin: round; opacity: .45; pointer-events: none; }
+
+.dpt-arrow { fill: none; stroke-width: 2; stroke-linecap: round; pointer-events: none; }
+.dpt-arrow.k-pick { stroke: var(--accent); stroke-width: 2.4; }
+.dpt-arrow.k-read { stroke: var(--muted); stroke-dasharray: 4 3; }
+.dpt-arrow.k-bad { stroke: var(--bad); stroke-width: 2.4; }
+.dpt-arrow.k-ok { stroke: var(--good); stroke-width: 2.4; }
+.dpt-ah.k-pick { fill: var(--accent); } .dpt-ah.k-read { fill: var(--muted); } .dpt-ah.k-bad { fill: var(--bad); } .dpt-ah.k-ok { fill: var(--good); }
+
+.dpt-tag-bg { fill: var(--surface-2); }
+.dpt-tag-bg.on { fill: var(--accent-soft); }
+.dpt-tag { fill: var(--muted); font-family: var(--font-mono); font-size: 12px; font-weight: 600; }
+.dpt-tag.on { fill: var(--accent-text); }
+
+.dpt-hit { fill: transparent; cursor: pointer; outline: none; }
+.dpt-hit:hover { fill: color-mix(in srgb, var(--accent) 8%, transparent); }
+.dpt-hit:focus-visible { stroke: var(--accent); stroke-width: 2; }
+
+/* Formula panel */
+.dpt-formula { display: flex; flex-direction: column; gap: 6px; padding: 10px 12px; border-radius: var(--radius-m); background: var(--surface-2); min-height: 72px; }
+.dpt-chip { align-self: flex-start; font-size: 12px; line-height: 16px; font-weight: 600; color: var(--ink-2); background: var(--surface); border: 1px solid var(--line-soft); padding: 3px 8px; border-radius: var(--radius-pill); font-variant-numeric: tabular-nums; }
+.dpt-eq { display: flex; flex-wrap: wrap; align-items: baseline; gap: 2px 8px; min-height: 22px; }
+.dpt-sym, .dpt-num { font-family: var(--font-mono); font-size: 14px; line-height: 22px; color: var(--ink-2); overflow-wrap: anywhere; }
+.dpt-num { color: var(--ink); font-weight: 700; }
+.dpt-tracecap { font-size: 14px; line-height: 22px; font-weight: 600; color: var(--accent-text); }
+.dpt-legend { display: flex; flex-wrap: wrap; gap: 4px 14px; font-size: 13px; line-height: 18px; color: var(--ink-2); }
+.dpt-leg { display: inline-flex; align-items: center; gap: 6px; }
+.dpt-leg i { width: 16px; height: 3px; border-radius: 2px; flex: none; }
+.dpt-leg.k-pick i { background: var(--accent); } .dpt-leg.k-read i { background: var(--muted); } .dpt-leg.k-bad i { background: var(--bad); } .dpt-leg.k-ok i { background: var(--good); }
+.dpt-leg.k-bad { color: var(--bad-ink); } .dpt-leg.k-ok { color: var(--good-ink); }
+.dpt-leg b { font-family: var(--font-mono); font-weight: 700; color: var(--ink); }
+.dpt-leg code { font-family: var(--font-mono); font-size: .92em; }
+.dpt-note { font-family: var(--font-mono); font-size: 13px; line-height: 18px; color: var(--ink-2); }
+.dpt-key { display: flex; flex-wrap: wrap; gap: 4px 12px; font-size: 12px; line-height: 16px; color: var(--muted); padding-top: 2px; }
+.dpt-key span { display: inline-flex; align-items: center; gap: 5px; }
+.dpt-key .sw { width: 12px; height: 12px; border-radius: 3px; border: 1px solid var(--line); flex: none; }
+.dpt-key .sw.base { background: var(--surface-3); }
+.dpt-key .sw.rock { background: repeating-linear-gradient(45deg, var(--surface-3) 0 3px, color-mix(in srgb, var(--muted) 55%, var(--surface-3)) 3px 5px); }
+.dpt-key .sw.fresh { background: color-mix(in srgb, var(--accent) 13%, var(--surface)); }
+.dpt-key .sw.cur { background: var(--accent-soft); border: 2px solid var(--accent); }
+.dpt-key .sw.answer.t-good { background: var(--good-soft); border: 2px solid var(--good); }
+.dpt-key .sw.answer.t-bad { background: var(--bad-soft); border: 2px solid var(--bad); }
+
+.dpt-extra { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 14px; }
+.dpt-extra .ui-seg-track button { min-height: 30px; padding: 4px 10px; font-size: 13px; }
+.dpt-extra .ui-toggle label { font-size: 14px; gap: 8px; }

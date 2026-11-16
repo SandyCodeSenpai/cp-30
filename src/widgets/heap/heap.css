@@ -1,0 +1,43 @@
+/* Heap lab. Tokens only. */
+.hp-stage { display: flex; flex-direction: column; gap: 10px; padding: 14px; }
+.hp-head { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 10px; font-size: 14px; line-height: 20px; color: var(--ink-2); min-height: 32px; }
+.hp-rule { color: var(--muted); font-size: 13px; }
+.hp-k { font-family: var(--font-mono); font-size: 13px; font-weight: 600; color: var(--ink); background: var(--surface-2); padding: 1px 7px; border-radius: 6px; }
+.hp-median { font-family: var(--font-mono); font-size: 15px; font-weight: 700; padding: 3px 12px; border-radius: 99px; background: var(--surface-2); color: var(--muted); font-variant-numeric: tabular-nums; }
+.hp-median.on { background: var(--good-soft); color: var(--good-ink); }
+.hp-ops { display: flex; align-items: center; gap: 6px; margin-left: auto; }
+.hp-push input { width: 56px; height: 32px; border-radius: 9px; border: 1px solid var(--line); background: var(--surface); color: var(--ink); font-family: var(--font-mono); font-size: 15px; text-align: center; }
+.hp-push input:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; border-color: transparent; }
+.hp-push input[aria-invalid="true"] { border-color: var(--bad); }
+.hp-err { flex-basis: 100%; font-size: 13px; color: var(--bad-ink); }
+.hp-view { min-width: 0; }
+
+.hp-slot { fill: none; stroke: var(--line); stroke-width: 1; stroke-dasharray: 3 3; }
+.hp-edge { stroke: var(--line); stroke-width: 2; transition: stroke var(--dur) var(--ease-color); }
+.hp-edge.on { stroke: var(--accent); stroke-width: 3; }
+
+.hp-tok circle { fill: var(--surface); stroke: var(--ink-2); stroke-width: 1.5; transition: fill var(--dur) var(--ease-color), stroke var(--dur) var(--ease-color); }
+.hp-tok text { fill: var(--ink); font-family: var(--font-mono); font-weight: 600; font-variant-numeric: tabular-nums; }
+.hp-tok.z-stream circle { fill: var(--surface-2); stroke: var(--line); }
+.hp-tok.z-stream text { fill: var(--ink-2); }
+.hp-tok.z-tray circle { fill: var(--surface-2); stroke: var(--line); stroke-dasharray: 3 2; }
+.hp-tok.z-tray text { fill: var(--muted); }
+.hp-tok.hl-act circle { fill: var(--accent-soft); stroke: var(--accent); stroke-width: 2.5; stroke-dasharray: none; }
+.hp-tok.hl-act text { fill: var(--accent-text); }
+.hp-tok.hl-cmp circle { stroke: var(--ink); stroke-width: 2.5; stroke-dasharray: 4 3; }
+.hp-tok.hl-res circle { fill: var(--good-soft); stroke: var(--good); stroke-width: 2.5; stroke-dasharray: none; }
+.hp-tok.hl-res text { fill: var(--good-ink); }
+.hp-tok.hl-out circle { fill: var(--surface-2); stroke: var(--muted); stroke-dasharray: 3 2; }
+.hp-tok.hl-out text { fill: var(--muted); }
+
+.hp-cell rect { fill: var(--surface); stroke: var(--line); stroke-width: 1.25; transition: fill var(--dur) var(--ease-color), stroke var(--dur) var(--ease-color); }
+.hp-cell-t { fill: var(--ink); font-family: var(--font-mono); font-size: 13px; font-weight: 600; font-variant-numeric: tabular-nums; }
+.hp-cell.hl-act rect { fill: var(--accent-soft); stroke: var(--accent); stroke-width: 2; }
+.hp-cell.hl-act .hp-cell-t { fill: var(--accent-text); }
+.hp-cell.hl-cmp rect { stroke: var(--ink); stroke-width: 2; stroke-dasharray: 4 3; }
+.hp-cell.hl-res rect { fill: var(--good-soft); stroke: var(--good); stroke-width: 2; }
+.hp-cell.hl-res .hp-cell-t { fill: var(--good-ink); }
+.hp-m-merge-k .hp-tok.z-tray circle { fill: var(--surface); stroke: var(--ink-2); stroke-dasharray: none; }
+.hp-m-merge-k .hp-tok.z-tray text { fill: var(--ink); }
+.hp-m-merge-k .hp-tok.z-tray.hl-act circle { fill: var(--accent-soft); stroke: var(--accent); stroke-width: 2.5; }
+.hp-m-merge-k .hp-tok.z-tray.hl-act text { fill: var(--accent-text); }

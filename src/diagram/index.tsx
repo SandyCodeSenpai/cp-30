@@ -3,8 +3,13 @@ import { useState, type ReactNode } from "react";
 import type { Visual as V } from "@/content/types";
 import { FlowDiagram } from "./flow";
 import { SequenceDiagram } from "./sequence";
+import { ArrayDiagram } from "./array";
+import { GridDiagram } from "./grid";
+import { TreeDiagram } from "./tree";
+import { GraphDiagram } from "./graph";
 import { Inline } from "./text";
 import "./diagram.css";
+import "./algo.css";
 
 export function Visual({ visual }: { visual: V }) {
   let body: ReactNode;
@@ -15,6 +20,10 @@ export function Visual({ visual }: { visual: V }) {
     case "code": body = <Code lang={visual.lang} code={visual.code} />; break;
     case "stats": body = <Stats items={visual.items} />; break;
     case "compare": body = <Compare left={visual.left} right={visual.right} />; break;
+    case "array": body = <ArrayDiagram v={visual} />; break;
+    case "grid": body = <GridDiagram v={visual} />; break;
+    case "tree": body = <TreeDiagram v={visual} />; break;
+    case "graph": body = <GraphDiagram v={visual} />; break;
     default: body = null;
   }
   return (

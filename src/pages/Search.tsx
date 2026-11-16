@@ -65,9 +65,11 @@ function Highlight({ text, q }: { text: string; q: string }) {
 }
 
 const SUGGEST = [
-  { label: "Delivery Playground", href: "#lab-complexity", icon: "flask" as IconName },
-  { label: "All labs", href: "#labs", icon: "grid" as IconName },
-  { label: "Course overview", href: "#course", icon: "list" as IconName },
+  { label: "Today's plan", href: "#today", icon: "calendar" as IconName },
+  { label: "Recognition gym", href: "#gym", icon: "timer" as IconName },
+  { label: "Tracker", href: "#tracker", icon: "chart" as IconName },
+  { label: "The 15-second triage lab", href: "#lab-triage", icon: "flask" as IconName },
+  { label: "Course overview", href: "#course", icon: "route" as IconName },
   { label: "Glossary", href: "#glossary", icon: "book" as IconName },
 ];
 
@@ -110,7 +112,7 @@ export default function SearchPalette({ open, onClose }: { open: boolean; onClos
               <span className="pal-ico"><Icon name={s.icon} size={18} /></span><span className="pal-main"><span className="pal-title">{s.label}</span></span>
             </div>
           ))}
-          {q.trim() && results.length === 0 && <div className="pal-empty">No results for "{q.trim()}". Try a shorter word, such as "cache" or "DNS".</div>}
+          {q.trim() && results.length === 0 && <div className="pal-empty">No results for "{q.trim()}". Try a shorter word, such as "window" or "heap".</div>}
           {q.trim() && results.map((d, i) => (
             <div key={`${d.kind}-${d.href}-${i}`} id={`pal-opt-${i}`} data-i={i} role="option" aria-selected={sel === i} className={`pal-item${sel === i ? " on" : ""}`}
               onMouseMove={() => setSel(i)} onClick={() => choose(i)} style={{ "--pc": d.color ?? "var(--muted)" } as CSSProperties}>

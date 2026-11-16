@@ -1,0 +1,90 @@
+/* Grid BFS lab. Tokens only. */
+.gb-root { min-width: 0; --gb-wall: color-mix(in srgb, var(--ink) 74%, var(--surface)); --gb-land: color-mix(in srgb, var(--ink) 28%, var(--surface)); }
+:root[data-theme="dark"] .gb-root { --gb-wall: color-mix(in srgb, var(--ink) 34%, var(--surface)); --gb-land: color-mix(in srgb, var(--ink) 30%, var(--surface)); }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .gb-root { --gb-wall: color-mix(in srgb, var(--ink) 34%, var(--surface)); --gb-land: color-mix(in srgb, var(--ink) 30%, var(--surface)); } }
+.gb-stage.ui-stage { display: flex; flex-direction: column; gap: 12px; padding: 12px; }
+.gb-stage .ui-stage svg { width: auto; }
+.gb-top { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px; }
+.gb-hint-line { display: inline-flex; align-items: center; gap: 6px; font-size: 13px; line-height: 18px; color: var(--muted); font-weight: 500; }
+.gb-hint-line svg { flex: none; width: 16px !important; height: 16px !important; }
+.gb-tools { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.gb-tools svg, .gb-stage .ui-btn svg { width: 16px !important; height: 16px !important; display: inline-block !important; }
+.gb-tools .ui-seg-track button { min-height: 30px; padding: 4px 10px; font-size: 13px; }
+
+/* The grid: cells tile with no gap so the path overlay lines up; each tile is inset inside its cell. */
+.gb-wrap { display: flex; justify-content: center; }
+.gb-grid {
+  position: relative; display: grid; width: 100%; max-width: 640px; touch-action: none; user-select: none; -webkit-user-select: none;
+  cursor: crosshair; border-radius: 12px; isolation: isolate; background: var(--surface); padding: 0;
+}
+.full .gb-grid { max-width: 680px; }
+.gb-cell { position: relative; aspect-ratio: 1 / 1; display: grid; place-items: center; min-width: 0; }
+.gb-tile {
+  position: absolute; inset: 1.5px; border-radius: 6px; background: var(--surface); border: 1px solid var(--line-soft);
+  transition: background var(--dur) var(--ease-color), border-color var(--dur) var(--ease-color), transform var(--dur) var(--ease);
+}
+.gb-num { position: relative; z-index: 2; font-family: var(--font-mono); font-size: var(--gb-fs, 14px); line-height: 1; font-weight: 600; color: var(--ink-2); font-variant-numeric: tabular-nums; pointer-events: none; }
+.gb-tag { position: absolute; z-index: 2; top: 2px; right: 4px; font-size: 12px; line-height: 12px; font-weight: 700; color: var(--ink); pointer-events: none; }
+
+/* Blocks */
+.gb-cell.blk.wall .gb-tile, .gb-cell.blk.empty .gb-tile { background: var(--gb-wall); border-color: transparent; }
+.gb-cell.blk.obstacle .gb-tile {
+  background: repeating-linear-gradient(135deg, color-mix(in srgb, var(--ink) 26%, var(--surface)) 0 3px, color-mix(in srgb, var(--ink) 10%, var(--surface)) 3px 7px);
+  border-color: color-mix(in srgb, var(--ink) 30%, var(--surface));
+}
+.m-dfs .gb-cell:not(.blk) .gb-tile { background: color-mix(in srgb, var(--accent) 3%, var(--surface-2)); border-color: transparent; }
+.m-dfs .gb-cell.land:not(.vis) .gb-tile { background: var(--gb-land); border-color: transparent; }
+.gb-orange { position: absolute; width: 22%; height: 22%; border-radius: 50%; background: color-mix(in srgb, var(--ink) 22%, var(--surface)); }
+
+/* Search states */
+.gb-cell.vis .gb-tile { background: color-mix(in srgb, var(--accent) 12%, var(--surface)); border-color: color-mix(in srgb, var(--accent) 20%, var(--surface)); }
+.gb-cell.blk.obstacle.vis .gb-tile {
+  background: repeating-linear-gradient(135deg, color-mix(in srgb, var(--accent) 30%, var(--surface)) 0 3px, color-mix(in srgb, var(--accent) 12%, var(--surface)) 3px 7px);
+}
+.m-dfs .gb-cell.vis .gb-tile { background: color-mix(in srgb, var(--accent) 22%, var(--surface)); border-color: color-mix(in srgb, var(--accent) 30%, var(--surface)); }
+.m-dfs .gb-cell.live .gb-tile { background: color-mix(in srgb, var(--accent) 40%, var(--surface)); }
+.m-dfs .gb-cell.vis .gb-num { color: var(--ink); }
+.gb-grid .gb-cell.inq .gb-tile { background: var(--accent-soft); border: 2px solid var(--accent); }
+.gb-cell.inq .gb-num { color: var(--accent-text); }
+.gb-cell.fresh .gb-tile { animation: gb-pop 420ms var(--ease); }
+.gb-grid .gb-cell.cur .gb-tile { background: var(--accent); border-color: var(--accent); transform: scale(1.06); box-shadow: var(--shadow-1); }
+.gb-cell.cur .gb-num, .gb-cell.cur .gb-tag { color: var(--accent-ink); }
+.gb-cell.look .gb-tile { box-shadow: 0 0 0 2px var(--surface), 0 0 0 4px var(--accent); }
+.gb-cell.scan::after { content: ""; position: absolute; inset: -1px; border-radius: 8px; border: 2px dashed var(--ink-2); pointer-events: none; }
+.gb-grid .gb-cell.path .gb-tile { background: var(--good-soft); border-color: var(--good); }
+.gb-cell.path .gb-num { color: var(--good-ink); }
+.gb-grid .gb-cell.path.blk.obstacle .gb-tile { background: repeating-linear-gradient(135deg, color-mix(in srgb, var(--good) 34%, var(--surface)) 0 3px, var(--good-soft) 3px 7px); }
+
+/* Start / target markers */
+.gb-cell.src .gb-tile { border: 2px solid var(--ink); }
+.gb-cell.src .gb-num { color: var(--ink); font-family: var(--font-body); font-weight: 700; }
+.gb-cell.tgt .gb-tile { border: 2px dashed var(--ink); }
+.gb-cell.tgt:not(.vis) .gb-num { color: var(--ink); font-family: var(--font-body); font-weight: 700; }
+.gb-cell.src.cur .gb-num { color: var(--accent-ink); }
+.gb-cell.src, .gb-cell.tgt { cursor: grab; }
+.m-multi-source .gb-cell.src { cursor: crosshair; }
+
+@keyframes gb-pop { 0% { transform: scale(.55); opacity: .3; } 60% { transform: scale(1.08); } 100% { transform: scale(1); opacity: 1; } }
+@media (prefers-reduced-motion: reduce) { .gb-cell.fresh .gb-tile { animation: none; } .gb-grid .gb-cell.cur .gb-tile { transform: none; } }
+
+.gb-path { position: absolute; inset: 0; z-index: 1; width: 100% !important; height: 100% !important; pointer-events: none; overflow: visible; }
+.gb-path polyline { stroke: var(--good); stroke-width: .9; stroke-linecap: round; stroke-linejoin: round; opacity: .7; }
+
+/* Legend */
+.gb-legend { display: flex; flex-wrap: wrap; gap: 6px 14px; font-size: 12px; line-height: 16px; color: var(--muted); font-weight: 500; }
+.gb-legend span { display: inline-flex; align-items: center; gap: 6px; }
+.gb-sw { width: 14px; height: 14px; border-radius: 4px; background: var(--surface); border: 1px solid var(--line); flex: none; }
+.gb-sw.blk.wall, .gb-sw.blk.empty { background: var(--gb-wall); border-color: transparent; }
+.gb-sw.blk.obstacle { background: repeating-linear-gradient(135deg, color-mix(in srgb, var(--ink) 26%, var(--surface)) 0 2px, color-mix(in srgb, var(--ink) 10%, var(--surface)) 2px 5px); }
+.gb-sw.water { background: color-mix(in srgb, var(--accent) 3%, var(--surface-2)); border-color: transparent; }
+.gb-sw.land { background: var(--gb-land); border-color: transparent; }
+.gb-sw.orange { border-radius: 50%; width: 8px; height: 8px; background: color-mix(in srgb, var(--ink) 22%, var(--surface)); border: 0; margin: 0 3px; }
+.gb-sw.inq { background: var(--accent-soft); border: 2px solid var(--accent); }
+.gb-sw.vis { background: color-mix(in srgb, var(--accent) 12%, var(--surface)); border-color: color-mix(in srgb, var(--accent) 20%, var(--surface)); }
+.gb-sw.live { background: color-mix(in srgb, var(--accent) 40%, var(--surface)); border-color: transparent; }
+.gb-sw.cur { background: var(--accent); border-color: var(--accent); }
+.gb-sw.path { background: var(--good-soft); border-color: var(--good); }
+
+.gb-hint { font-weight: 500; text-align: right; }
+@container (max-width: 520px) { .gb-hint { display: none; } }
+.gb-cell.path .gb-num { background: var(--good-soft); padding: 2px 3px; border-radius: 5px; }

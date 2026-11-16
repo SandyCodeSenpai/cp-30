@@ -5,18 +5,18 @@ import { WIDGET_LIST } from "@/widgets/registry";
 import { useReducedMotion } from "@/lib/hooks";
 import { chapterByN, partColor, plain } from "./course";
 import { LabCard, PageHead, fadeUp } from "./common";
-import { PlaygroundCard } from "./Home";
+import { FeaturedLab } from "./Home";
 
 export default function LabsPage() {
   const p = useProgress();
   const reduce = useReducedMotion();
-  const labs = WIDGET_LIST.filter((w) => w.id !== "complexity");
+  const labs = WIDGET_LIST.filter((w) => w.id !== "triage");
   const chapters = [...new Set(labs.map((w) => w.chapter))].sort((a, b) => a - b);
   const doneCount = WIDGET_LIST.filter((w) => p.widgets?.[w.id]).length;
   return (
     <div className="page labs">
-      <PageHead eyebrow={`${WIDGET_LIST.length} simulations · ${doneCount} done`} title="Labs" sub="Real simulations of the systems in the course. Change one thing, watch what happens, and build the intuition a staff engineer uses in design reviews." />
-      <motion.div {...fadeUp(reduce)}><PlaygroundCard wide /></motion.div>
+      <PageHead eyebrow={`${WIDGET_LIST.length} labs · ${doneCount} done`} title="Labs" sub="Step-by-step players for every pattern in the course. Change the input, step through the algorithm, and watch the Python template run line by line." />
+      <motion.div {...fadeUp(reduce)}><FeaturedLab wide /></motion.div>
       {chapters.map((n) => {
         const ch = chapterByN(n);
         return (

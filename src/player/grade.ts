@@ -2,7 +2,8 @@
 import type { MultiStep, NumberStep, OrderStep, QuizStep, Step } from "@/content/types";
 
 /** XP rules: keep them simple and visible. */
-export const XP = { lesson: 10, firstTry: 2, widget: 5 } as const;
+/** code: all tests pass without opening the solution (code steps are not scored for accuracy). */
+export const XP = { lesson: 10, firstTry: 2, widget: 5, code: 5 } as const;
 
 export type Interactive = QuizStep | MultiStep | NumberStep | OrderStep | Extract<Step, { kind: "match" }>;
 export const isInteractive = (s: Step): s is Interactive =>

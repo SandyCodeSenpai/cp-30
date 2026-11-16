@@ -17,7 +17,7 @@ function glossaryIndex(): Map<string, GlossaryEntry> {
     if (!p) continue;
     const [, base, paren] = p;
     add(base, e);
-    // "ABR (adaptive bitrate)" and "Time to first byte (TTFB)": both halves name the term.
+    // "BFS (breadth-first search)" and "Time limit exceeded (TLE)": both halves name the term.
     // "Drift (config)" or "cenc (mode)": the parenthesis is only a qualifier, so skip it.
     if (isAcronym(base) || isAcronym(paren)) add(paren, e);
   }

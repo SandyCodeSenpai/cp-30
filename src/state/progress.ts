@@ -74,6 +74,8 @@ export const progress = {
   markWidget(id: string) { if (!state.widgets[id]) save({ ...state, widgets: { ...state.widgets, [id]: true } }); },
   setMissed(lessonId: string, steps: number[]) { save({ ...state, missed: { ...state.missed, [lessonId]: steps } }); },
   reset() { save({ ...empty }); },
+  /** Replace everything (import from a backup file). Missing fields get defaults. */
+  replaceAll(next: Partial<ProgressState>) { save({ ...empty, ...next }); },
   /* ---- the 30-day plan ---- */
   setDay1(iso: string | null) { save({ ...state, day1: iso }); },
   setProblem(ref: string, st: ProblemStatus | null) {

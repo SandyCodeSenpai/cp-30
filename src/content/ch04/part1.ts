@@ -1,6 +1,1615 @@
-import type { Lesson } from "../types";
-// Placeholder. The content agent for chapter 4, Days 0-3, replaces this file.
+import type { Lesson, Tone } from "../types";
+
+// Chapter 4, part 1: the Week 1 intro and Days 0-3 (ids ch04-l1 ... ch04-l8).
+
+/** Join lines of code into one string (keeps Python indentation easy to read). */
+const L = (...lines: string[]) => lines.join("\n");
+/** A pointer under a cell. */
+const P = (at: number, label: string, tone?: Tone) => (tone ? { at, label, tone } : { at, label });
+
+/* ------------------------------------------------------------------ */
+/* Shared code                                                          */
+/* ------------------------------------------------------------------ */
+
+const IO_TEMPLATE = L(
+  "import sys",
+  "",
+  "def solve(n, a):",
+  "    return sum(a)                   # replace with the real solution",
+  "",
+  "def main():",
+  "    data = sys.stdin.buffer.read().split()   # every token at once, as bytes",
+  "    pos = 0",
+  "    t = int(data[pos]); pos += 1",
+  "    out = []",
+  "    for _ in range(t):",
+  "        n = int(data[pos]); pos += 1",
+  "        a = list(map(int, data[pos:pos + n])); pos += n",
+  "        out.append(str(solve(n, a)))",
+  "    sys.stdout.write(\"\\n\".join(out) + \"\\n\")",
+  "",
+  "main()",
+);
+
+const WEIRD = L(
+  "import sys",
+  "",
+  "def main():",
+  "    data = sys.stdin.buffer.read().split()",
+  "    n = int(data[0])",
+  "    out = [n]",
+  "    while n != 1:",
+  "        n = n // 2 if n % 2 == 0 else 3 * n + 1",
+  "        out.append(n)",
+  "    sys.stdout.write(\" \".join(map(str, out)) + \"\\n\")",
+  "",
+  "main()",
+);
+
+const TWO_SUM = L(
+  "def two_sum(nums, target):",
+  "    seen = {}",
+  "    for i, x in enumerate(nums):",
+  "        if target - x in seen:",
+  "            return [seen[target - x], i]",
+  "        seen[x] = i",
+  "    return []",
+);
+
+const GROUP_COUNT = L(
+  "from collections import Counter, defaultdict",
+  "",
+  "def group_by_key(words):",
+  "    groups = defaultdict(list)",
+  "    for w in words:",
+  "        groups[tuple(sorted(w))].append(w)   # key must be hashable: tuple, not list",
+  "    return list(groups.values())",
+  "",
+  "def count_equal_pairs(a, key):",
+  "    cnt = Counter(key(i, x) for i, x in enumerate(a))",
+  "    return sum(c * (c - 1) // 2 for c in cnt.values())",
+);
+
+const DAY1_TEMPLATE = L(
+  "from collections import Counter, defaultdict",
+  "",
+  "# 1. Find the partner: value -> index",
+  "def two_sum(nums, target):",
+  "    seen = {}",
+  "    for i, x in enumerate(nums):",
+  "        if target - x in seen:",
+  "            return [seen[target - x], i]",
+  "        seen[x] = i",
+  "    return []",
+  "",
+  "# 2. Group by canonical key",
+  "def group_by_key(words):",
+  "    groups = defaultdict(list)",
+  "    for w in words:",
+  "        groups[tuple(sorted(w))].append(w)   # key must be hashable: tuple, not list",
+  "    return list(groups.values())",
+  "",
+  "# 3. Count equal-key pairs (i < j) in O(n)",
+  "def count_equal_pairs(a, key):",
+  "    cnt = Counter(key(i, x) for i, x in enumerate(a))",
+  "    return sum(c * (c - 1) // 2 for c in cnt.values())",
+);
+
+const PAIR_SUM = L(
+  "def pair_sum(a, target):",
+  "    i, j = 0, len(a) - 1",
+  "    while i < j:",
+  "        s = a[i] + a[j]",
+  "        if s == target:",
+  "            return i, j",
+  "        if s < target:",
+  "            i += 1",
+  "        else:",
+  "            j -= 1",
+  "    return -1, -1",
+);
+
+const THREE_SUM = L(
+  "def three_sum(nums):",
+  "    nums.sort()",
+  "    n, res = len(nums), []",
+  "    for i in range(n - 2):",
+  "        if i > 0 and nums[i] == nums[i - 1]:",
+  "            continue                          # skip duplicate first value",
+  "        lo, hi = i + 1, n - 1",
+  "        while lo < hi:",
+  "            s = nums[i] + nums[lo] + nums[hi]",
+  "            if s < 0:",
+  "                lo += 1",
+  "            elif s > 0:",
+  "                hi -= 1",
+  "            else:",
+  "                res.append([nums[i], nums[lo], nums[hi]])",
+  "                lo += 1",
+  "                hi -= 1",
+  "                while lo < hi and nums[lo] == nums[lo - 1]:",
+  "                    lo += 1                   # skip duplicate second value",
+  "    return res",
+);
+
+const COMPACT = L(
+  "def compact(a, keep):",
+  "    w = 0",
+  "    for r in range(len(a)):",
+  "        if keep(a[r]):",
+  "            a[w] = a[r]",
+  "            w += 1",
+  "    return w                                  # new length",
+);
+
+const LONGEST = L(
+  "from collections import defaultdict",
+  "",
+  "def longest_window(s):",
+  "    count = defaultdict(int)",
+  "    left = best = 0",
+  "    for right, ch in enumerate(s):",
+  "        count[ch] += 1                          # add right",
+  "        while count[ch] > 1:                    # shrink while invalid",
+  "            count[s[left]] -= 1",
+  "            left += 1",
+  "        best = max(best, right - left + 1)      # window is valid here",
+  "    return best",
+);
+
+const SHORTEST = L(
+  "def shortest_window(nums, target):",
+  "    left = cur = 0",
+  "    best = len(nums) + 1",
+  "    for right, x in enumerate(nums):",
+  "        cur += x",
+  "        while cur >= target:                    # valid: record, then shrink",
+  "            best = min(best, right - left + 1)",
+  "            cur -= nums[left]",
+  "            left += 1",
+  "    return best if best <= len(nums) else 0",
+);
+
+const AT_MOST = L(
+  "from collections import defaultdict",
+  "",
+  "def count_at_most(nums, k):",
+  "    if k < 0:",
+  "        return 0",
+  "    count = defaultdict(int)",
+  "    left = distinct = total = 0",
+  "    for right, x in enumerate(nums):",
+  "        if count[x] == 0:",
+  "            distinct += 1",
+  "        count[x] += 1",
+  "        while distinct > k:",
+  "            count[nums[left]] -= 1",
+  "            if count[nums[left]] == 0:",
+  "                distinct -= 1",
+  "            left += 1",
+  "        total += right - left + 1               # subarrays ending at right",
+  "    return total",
+);
+
+const DAY3_TEMPLATE = L(
+  "from collections import defaultdict",
+  "",
+  "# 1. Longest valid window (here: no repeated character, LC 3)",
+  "def longest_window(s):",
+  "    count = defaultdict(int)",
+  "    left = best = 0",
+  "    for right, ch in enumerate(s):",
+  "        count[ch] += 1                          # add right",
+  "        while count[ch] > 1:                    # shrink while invalid",
+  "            count[s[left]] -= 1",
+  "            left += 1",
+  "        best = max(best, right - left + 1)      # window is valid here",
+  "    return best",
+  "",
+  "# 2. Shortest valid window (positive values, sum >= target)",
+  "def shortest_window(nums, target):",
+  "    left = cur = 0",
+  "    best = len(nums) + 1",
+  "    for right, x in enumerate(nums):",
+  "        cur += x",
+  "        while cur >= target:                    # valid: record, then shrink",
+  "            best = min(best, right - left + 1)",
+  "            cur -= nums[left]",
+  "            left += 1",
+  "    return best if best <= len(nums) else 0",
+  "",
+  "# 3. Count subarrays with at most k distinct values; exactly k = f(k) - f(k-1)",
+  "def count_at_most(nums, k):",
+  "    if k < 0:",
+  "        return 0",
+  "    count = defaultdict(int)",
+  "    left = distinct = total = 0",
+  "    for right, x in enumerate(nums):",
+  "        if count[x] == 0:",
+  "            distinct += 1",
+  "        count[x] += 1",
+  "        while distinct > k:",
+  "            count[nums[left]] -= 1",
+  "            if count[nums[left]] == 0:",
+  "                distinct -= 1",
+  "            left += 1",
+  "        total += right - left + 1               # subarrays ending at right",
+  "    return total",
+);
+
+/* Visual data reused across flip-book frames */
+const TS = [3, 2, 4];                    // Two Sum example, target 6
+const PS = [1, 2, 4, 7, 11, 15];         // pair-sum example, target 15
+const T3 = [-4, -1, -1, 0, 1, 2];        // 3Sum example, already sorted
+const SW = ["a", "b", "c", "b", "d"];    // longest window example
+const SH = [2, 3, 1, 2, 4, 3];           // shortest window example, target 7
+
+const B_END =
+  "Log 1 mistake and add 3 cards. Record today's results in the Tracker, then warm up tomorrow in the Gym.";
+
 const lessons: Lesson[] = [
-  { id: "ch04-p1-placeholder", day: 0, title: "Days 0-3 are being written", goal: "Coming soon.", minutes: 1, steps: [{ kind: "read", body: "These days are being written." }] },
+  /* ================================================================ */
+  /* Day 0 A: setup                                                   */
+  /* ================================================================ */
+  {
+    id: "ch04-l1",
+    day: 0,
+    title: "Day 0: Build your workbench",
+    goal: "Set up the four judge accounts, PyPy, a cp folder and a tested template.py before any learning starts.",
+    minutes: 10,
+    steps: [
+      {
+        kind: "read",
+        title: "Week 1: the base layer",
+        body: "This week builds the base layer that every later pattern sits on.\n\nFirst you learn to read the **[[constraints]]** (the limits on the input, like n ≤ 2·10^5) and turn n into a target [[time complexity]], before you write a line of code. Then you drill six tools that solve most array and string problems.",
+        visual: {
+          kind: "table",
+          headers: ["Day", "Tool"],
+          rows: [
+            ["1", "Complexity from constraints + hash maps"],
+            ["2", "Two pointers + sorting"],
+            ["3", "Sliding window"],
+            ["4", "Prefix sums + difference arrays"],
+            ["5", "Monotonic stack and deque"],
+            ["6", "Binary search + binary search on the answer"],
+            ["7", "Review, timed re-solve, first live contest"],
+          ],
+        },
+      },
+      {
+        kind: "read",
+        title: "The hard part is speed",
+        body: "None of these are hard ideas. What makes them hard is spotting them fast, under a clock, without help.\n\nSo every day ends with a **recognition drill**: short problem statements where you name the tool. The week ends with a timed re-solve, Recognition Test #1 and your first live contest.\n\nBy the end of Day 7 you should name the right tool for any Week 1 problem in under 15 seconds, and type its template from memory without a bug.",
+      },
+      {
+        kind: "read",
+        title: "Day 0: setup and baseline",
+        body: "**Goal:** working accounts, PyPy on your machine, a tested `template.py`, and honest baseline numbers written down.\n\nDay 0 is not a learning day. You build the workbench and measure where you start. This lesson is the workbench. The next lesson is the **baseline**: a timed test of your starting level.\n\nThe baseline only matters if it is honest. No AI, no hints, no editorials until the score is written.",
+        visual: {
+          kind: "table",
+          headers: ["Time", "Task"],
+          rows: [
+            ["0:00–0:45", "Accounts, PyPy install, folder, template.py, one test submission"],
+            ["0:45–0:55", "Baseline part 1: 20 recognition cards"],
+            ["0:55–2:35", "Baseline part 2: 4 timed problems, 25 min each"],
+            ["2:35–3:00", "Record scores, then read solutions for the problems you failed"],
+          ],
+          caption: "Plan for the 3 hours",
+        },
+      },
+      {
+        kind: "quiz",
+        guess: true,
+        prompt: "Take a guess. The same Python solution passes on Codeforces but runs out of time on LeetCode. What is the most likely reason?",
+        options: [
+          "LeetCode always uses bigger tests",
+          "The two sites run Python with different engines, and one is much faster on loops",
+          "Codeforces gives every problem 10 seconds",
+        ],
+        answer: 1,
+        explain: "The engine matters. LeetCode runs **CPython**, the normal Python. Codeforces lets you pick **PyPy**, a faster Python that is about 10 times quicker on loops. Same code, different speed.",
+      },
+      {
+        kind: "read",
+        title: "Four accounts",
+        body: "Create all four today, even the ones you will not use until Week 4. A **judge** is the site that runs your code on hidden tests and says pass or fail.",
+        visual: {
+          kind: "table",
+          headers: ["Site", "Use this month", "Setting to change"],
+          rows: [
+            ["LeetCode (leetcode.com)", "Daily problems, weekly contests", "Default language: Python3. This is CPython, no PyPy option."],
+            ["Codeforces (codeforces.com)", "Rated problemset with rating filters, Div 3/4 contests", "On every submit pick PyPy 3 64-bit, never plain Python 3."],
+            ["AtCoder (atcoder.jp)", "ABC contests, clean beginner problems", "Pick the PyPy option when you submit."],
+            ["CSES (cses.fi)", "The CSES Problem Set: short, classic, strict time limits", "Pick PyPy3 where offered. Register so it tracks what you solved."],
+          ],
+        },
+      },
+      {
+        kind: "read",
+        title: "CPython vs PyPy",
+        body: "**[[CPython]]** is the standard Python interpreter. **[[PyPy]]** is another Python that compiles hot loops while they run, so loops are about 10 times faster.\n\nA rough rule for this whole course: CPython does about 10^7 simple operations per second, PyPy about 10^8.",
+        callout: {
+          type: "trap",
+          text: "LeetCode runs CPython, about 10× slower than PyPy on loops. A solution that passes on Codeforces in PyPy can time out on LeetCode in CPython. Know which engine judges you, and budget for it.",
+        },
+      },
+      {
+        kind: "read",
+        title: "Install PyPy locally",
+        body: "Install PyPy with Homebrew and add a short alias, so `pypy` runs it.\n\nHomebrew has disabled `pypy3.10`, so use `pypy3.11`. Codeforces and AtCoder run a 3.10/3.11-era PyPy. The small version gap does not matter for anything in this course.",
+        visual: {
+          kind: "code",
+          lang: "bash",
+          code: L(
+            "brew install pypy3.11",
+            "pypy3.11 --version          # should print a PyPy 7.x / 8.x, Python 3.11 line",
+            "echo \"alias pypy='pypy3.11'\" >> ~/.zshrc && source ~/.zshrc",
+          ),
+        },
+      },
+      {
+        kind: "read",
+        title: "One folder for the month",
+        body: "Make one `cp` folder with a subfolder per day. Every solution this month lives here, so you can find and re-solve old problems fast.",
+        visual: {
+          kind: "code",
+          lang: "bash",
+          code: L(
+            "mkdir -p ~/cp && cd ~/cp",
+            "mkdir day00 day01 day02 day03 day04 day05 day06 day07",
+          ),
+        },
+      },
+      {
+        kind: "read",
+        title: "template.py",
+        body: "Create `~/cp/template.py` from Chapter 3, the Python toolkit: [[fast input|fast I/O]], output collected and written once, and a `main()` function.\n\n**Type it, do not paste it.** You will start every Codeforces, AtCoder and CSES solution from this file for 30 days, so your fingers should know it.",
+        visual: { kind: "code", lang: "python", code: IO_TEMPLATE, caption: "The template from Chapter 3" },
+      },
+      {
+        kind: "read",
+        title: "Why each line is there",
+        body: "- `sys.stdin.buffer.read().split()` reads the whole input in one call and splits on any whitespace. Nothing is faster.\n- `pos` walks through the tokens. Numbers on one line or ten lines look the same.\n- `main()`: local variables are faster than globals in CPython.\n- `out` plus one `write`: calling `print` 10^5 times is slow, so collect strings and write once.\n\nMental test: input `1`, `3`, `1 2 3` gives t = 1, n = 3, a = [1, 2, 3], output `6`.",
+        callout: { type: "trap", text: "Tokens from `sys.stdin.buffer` are **bytes**, not strings. `int(b\"42\")` works, but `b\"abc\" == \"abc\"` is `False`, silently. Use `.decode()` when you need a real string." },
+      },
+      {
+        kind: "code",
+        title: "Type template.py from memory",
+        prompt: "Type the template from memory. Input: the number of test cases t, then for each test n and n numbers. Print the sum of each test on its own line. Read with `sys.stdin`, write with one `sys.stdout.write`.",
+        starter: L(
+          "import sys",
+          "",
+          "# 1. solve(n, a): return the answer for one test",
+          "# 2. main(): read every token at once, walk them with pos",
+          "# 3. collect answers in out, write once",
+          "",
+        ),
+        solution: IO_TEMPLATE,
+        tests: [
+          { stdin: "2\n3\n1 2 3\n1\n5\n", stdout: "6\n5" },
+          { stdin: "1\n3\n1\n2\n3\n", stdout: "6", label: "numbers on separate lines" },
+          { stdin: "1\n0\n\n", stdout: "0", label: "empty array" },
+          { stdin: "3\n2\n-1 1\n4\n1 1 1 1\n1\n100\n", stdout: "0\n4\n100" },
+        ],
+        fromMemory: true,
+        teach: "Read every token with `sys.stdin.buffer.read().split()`. Keep an index `pos`, read t, then for each test read n and the next n tokens. Append `str(answer)` to a list and write it joined by newlines.",
+        explain: "This is the file you copy at the start of every stdin problem. `solve` changes; `main` stays.",
+      },
+      {
+        kind: "read",
+        title: "Test the whole pipeline once",
+        body: "Prove your setup works before a contest depends on it.\n\n1. Copy `template.py` to `day00/weird.py` and solve **CSES — Weird Algorithm** (Introductory Problems): start at n; if n is even divide by 2, if odd do 3n + 1; print every value until you reach 1.\n2. Run it locally against an input file.\n3. Submit on CSES with PyPy3. Green means your I/O works. Red means fix it now, not during a contest.",
+        visual: {
+          kind: "code",
+          lang: "bash",
+          code: "pypy day00/weird.py < day00/weird.in",
+          caption: "`<` feeds the file into the program as its input",
+        },
+      },
+      {
+        kind: "quiz",
+        teach: "Locally you run a solution with the PyPy alias and feed an input file into it with the `<` sign.",
+        prompt: "Which command runs `day00/weird.py` locally against the input file `day00/weird.in`?",
+        options: [
+          "pypy day00/weird.in < day00/weird.py",
+          "pypy day00/weird.py < day00/weird.in",
+          "python3 day00/weird.py > day00/weird.in",
+          "pypy day00/weird.py day00/weird.in > out",
+        ],
+        answer: 1,
+        explain: "`pypy file.py < input` runs the program and feeds the input file to standard input. `>` would overwrite your input file with the output.",
+      },
+      {
+        kind: "code",
+        title: "Weird Algorithm",
+        prompt: "Solve CSES — Weird Algorithm in the template style. Read n. While n is not 1: halve it if even, else make it 3n + 1. Print every value on one line, starting with n.",
+        starter: L("import sys", "", "def main():", "    data = sys.stdin.buffer.read().split()", "    n = int(data[0])", "    # build the list of values, then write once", "", "main()"),
+        solution: WEIRD,
+        tests: [
+          { stdin: "3\n", stdout: "3 10 5 16 8 4 2 1" },
+          { stdin: "1\n", stdout: "1", label: "already 1" },
+          { stdin: "4\n", stdout: "4 2 1" },
+          { stdin: "7\n", stdout: "7 22 11 34 17 52 26 13 40 20 10 5 16 8 4 2 1" },
+        ],
+        teach: "Keep the values in a list. Loop while n != 1, change n with the even or odd rule, append it. At the end write `\" \".join(map(str, values))`.",
+        explain: "Values can grow well past n, which is fine in Python: integers never overflow.",
+      },
+      {
+        kind: "quiz",
+        teach: "LeetCode only offers CPython. Codeforces, AtCoder and CSES let you choose PyPy, and you should pick it on every submit there.",
+        prompt: "You submit a Python solution on Codeforces. Which language option do you pick?",
+        options: ["Python 3", "PyPy 3 64-bit", "It does not matter, they run at the same speed"],
+        answer: 1,
+        explain: "On Codeforces always pick PyPy 3 64-bit. Plain Python 3 is CPython, about 10 times slower on loops.",
+      },
+      {
+        kind: "summary",
+        points: [
+          "Week 1 drills six tools; the hard part is spotting them in 15 seconds.",
+          "Four accounts: LeetCode runs CPython; Codeforces, AtCoder and CSES let you pick PyPy, so always pick it.",
+          "CPython does about 10^7 simple operations per second, PyPy about 10^8.",
+          "`template.py` reads every token at once and writes once. Type it, do not paste it.",
+          "Test the pipeline with CSES — Weird Algorithm: `pypy day00/weird.py < day00/weird.in`, then submit.",
+        ],
+      },
+    ],
+  },
+
+  /* ================================================================ */
+  /* Day 0 B: baseline                                                */
+  /* ================================================================ */
+  {
+    id: "ch04-l2",
+    day: 0,
+    title: "Day 0 drill: Measure your baseline",
+    goal: "Take the two-part baseline honestly and record the numbers that Day 30 is compared against.",
+    minutes: 8,
+    steps: [
+      {
+        kind: "read",
+        title: "Where are you starting?",
+        body: "The **baseline** is a timed test of where you start, so Day 30 has something real to compare against. It has two parts: 20 recognition cards, then 4 timed problems.\n\nNo AI, no hints, no [[editorials|editorial]] until the score is written. A flattering baseline is a useless one.",
+        visual: {
+          kind: "stats",
+          items: [
+            { value: "20", label: "recognition cards", note: "15 seconds each" },
+            { value: "4", label: "timed problems", note: "25 minutes each" },
+            { value: "0", label: "hints", note: "until the score is written" },
+          ],
+        },
+      },
+      {
+        kind: "read",
+        title: "Part 1: 20 recognition cards",
+        body: "Open the recognition deck in the Gym (Chapter 9 explains it) and draw 20 [[recognition cards|recognition card]] at random. For each card: read the one-line statement, start a 15-second count, say the pattern out loud, then flip.\n\n- Score 1 point if you named the right pattern within 15 seconds.\n- Half credit does not exist.\n- Write down **which 20 cards** you drew. Day 30 uses a fresh set and compares the score.",
+      },
+      {
+        kind: "quiz",
+        teach: "A card scores only if the right pattern is named inside 15 seconds. There is no partial score.",
+        prompt: "You name the right pattern for a card at 19 seconds. How many points?",
+        options: ["1 point", "Half a point", "0 points"],
+        answer: 2,
+        explain: "0 points. The rule is the right pattern within 15 seconds, and half credit does not exist.",
+      },
+      {
+        kind: "read",
+        title: "Part 2: four timed problems",
+        body: "Each problem gets a hard 25-minute [[time box]]. Start the timer before you read the statement. When the timer ends, stop typing, even mid-line.\n\nThese four come from topics you will learn in Weeks 2–3 (linked lists, DP, grids, intervals). That is on purpose: the baseline measures your raw starting point, not this week's lessons.",
+      },
+      {
+        kind: "read",
+        title: "A fail is a fail",
+        body: "The time box is the measurement. If you stretch it, the number stops meaning anything, and Day 30 cannot show your progress.",
+        callout: { type: "mistake", text: "\"I would have got it with 5 more minutes\" is a fail. Write it as a fail. The box is the measurement." },
+      },
+      {
+        kind: "quiz",
+        teach: "The 25-minute box is a hard stop. Whatever state the code is in when the timer ends is the result.",
+        prompt: "At 25:00 your solution for B3 is one line from done. What do you record?",
+        options: ["Solved, it was basically done", "Failed", "Solved, but note 27 minutes"],
+        answer: 1,
+        explain: "Failed. Stop typing when the timer ends, even mid-line. The box is the measurement.",
+      },
+      {
+        kind: "practice",
+        title: "Baseline: 4 timed problems",
+        intro: "Hard 25-minute box each. Timer on before you read. No AI, no hints, no editorials until the score is written. For each problem record: solved? minutes? pattern named in the first 60 seconds?",
+        problems: [
+          { ref: "LC 206 Reverse Linked List", tier: "core", lvl: "E", box: 25, clue: "Solved? Minutes? Pattern named in first 60 s?" },
+          { ref: "LC 70 Climbing Stairs", tier: "core", lvl: "E", box: 25, clue: "Solved? Minutes? Pattern named in first 60 s?" },
+          { ref: "LC 200 Number of Islands", tier: "core", lvl: "M", box: 25, clue: "Solved? Minutes? Pattern named in first 60 s?" },
+          { ref: "LC 56 Merge Intervals", tier: "core", lvl: "M", box: 25, clue: "Solved? Minutes? Pattern named in first 60 s?" },
+        ],
+      },
+      {
+        kind: "read",
+        title: "Record it",
+        body: "Fill the **Day 0 row** in the Tracker:\n- cards out of 20\n- problems solved out of 4\n- total minutes\n- how many of the 4 you could name the pattern for in the first minute\n\nThen, and only then, read the solutions to the ones you failed. Add each failed problem to your **[[mistake journal]]** with one line: *what I should have noticed*.",
+      },
+      {
+        kind: "reveal",
+        prompt: "End-of-day check 1: which judge uses CPython, and which three let you pick PyPy?",
+        answer: "LeetCode runs CPython only. Codeforces, AtCoder and CSES let you pick PyPy, and you always should.",
+      },
+      {
+        kind: "reveal",
+        prompt: "End-of-day check 2: what command runs a solution locally against an input file?",
+        answer: "`pypy day00/weird.py < day00/weird.in`: the `<` feeds the file in as standard input.",
+      },
+      {
+        kind: "reveal",
+        prompt: "End-of-day check 3: what were your two baseline numbers?",
+        answer: "Cards out of 20 and problems out of 4, both written in the Tracker's Day 0 row before you read any solution. If you cannot say them now, write them down before you close this lesson.",
+      },
+      {
+        kind: "summary",
+        points: [
+          "The baseline has two parts: 20 cards at 15 seconds each, and 4 problems at 25 minutes each.",
+          "No half credit, no extra minutes. \"Almost\" is a fail.",
+          "Record cards /20, problems /4, total minutes and patterns named in the first minute.",
+          "Read solutions only after the score is written; log each failure as \"what I should have noticed\".",
+          B_END,
+        ],
+      },
+    ],
+  },
+
+  /* ================================================================ */
+  /* Day 1 A: complexity from constraints + hashing                   */
+  /* ================================================================ */
+  {
+    id: "ch04-l3",
+    day: 1,
+    title: "Day 1: Constraints first, then hashing",
+    goal: "Read the constraints first, name the target complexity in 5 seconds, and use a hash map or set to kill an O(n²) scan.",
+    minutes: 12,
+    steps: [
+      {
+        kind: "read",
+        title: "Read the bottom first",
+        body: "**Goal:** read the constraints first, name the target complexity in 5 seconds, and use a hash map or set to kill an O(n²) scan.\n\nMost beginners read the story, write a double loop, and get **[[TLE]]** (time limit exceeded). Today you learn to look at n before anything else. Then you learn the most common fix for a slow loop: a hash lookup.",
+      },
+      {
+        kind: "read",
+        title: "Constraints first",
+        body: "The problem setter picked n so the intended solution passes and slower ones fail. So the **constraints** at the bottom of the statement tell you how fast your idea must be.\n\nWe write that speed as a [[time complexity]] in **[[big O]]**: O(n) means the steps grow in line with n; O(n²) means they grow with n times n. Read the bottom of the problem before the story.",
+      },
+      {
+        kind: "read",
+        title: "From n to a target complexity",
+        body: "Find the row for the largest n in the constraints. That row is your **[[budget|operation budget]]**: the slowest complexity that still passes.",
+        visual: {
+          kind: "table",
+          headers: ["Largest n", "Target", "Ops at max n", "Typical tool"],
+          rows: [
+            ["n ≤ 10", "O(n!)", "3.6·10^6", "Try every permutation"],
+            ["n ≤ 20", "O(2^n) or O(2^n · n)", "10^6 – 2·10^7", "Every subset, bitmask"],
+            ["n ≤ 500", "O(n³)", "1.25·10^8", "Triple loop, interval DP, Floyd"],
+            ["n ≤ 5000", "O(n²)", "2.5·10^7", "Every pair, 2-D DP"],
+            ["n ≤ 2·10^5", "O(n log n)", "~3.5·10^6", "Sort, binary search, heap"],
+            ["n ≤ 10^6", "O(n)", "10^6", "One pass: hash map, window, stack"],
+            ["n ≤ 10^18", "O(log n) or O(1)", "~60", "Binary search on answer, math formula"],
+          ],
+          caption: "The competitive version of the table, with Python's real speed built in",
+        },
+      },
+      {
+        kind: "read",
+        title: "Python's real speed",
+        body: "Time limits are usually 1–2 seconds. To check an idea, count its operations at the largest n, then divide by the engine speed: 10^7 for CPython (LeetCode), 10^8 for PyPy (Codeforces, AtCoder, CSES). If the answer is above 1 second, you are too slow.",
+        callout: {
+          type: "trap",
+          text: "CPython does about **10^7 simple operations per second**. PyPy does about **10^8**. Divide the ops count by 10^7 (LeetCode) or 10^8 (Codeforces/AtCoder/CSES with PyPy). If the answer is above 1, you are too slow.",
+        },
+      },
+      {
+        kind: "read",
+        title: "Three worked checks",
+        body: "- O(n²) at n = 5000: 5000 × 5000 = 2.5·10^7 ops. PyPy: 2.5·10^7 / 10^8 ≈ 0.3 s, fine. CPython: 2.5·10^7 / 10^7 ≈ 2.5 s, too slow.\n- O(n³) at n = 500 is 1.25·10^8: risky even in PyPy. Keep the inner loop tiny.\n- O(n log n) at 2·10^5 is about 3.5·10^6: safe everywhere.",
+        visual: {
+          kind: "stats",
+          items: [
+            { value: "≈0.3 s", label: "O(n²), n = 5000, PyPy", note: "passes" },
+            { value: "≈2.5 s", label: "O(n²), n = 5000, CPython", note: "TLE" },
+            { value: "≈0.35 s", label: "O(n log n), n = 2·10^5, CPython", note: "passes" },
+          ],
+        },
+      },
+      {
+        kind: "read",
+        title: "The first clue",
+        body: "This is the clue you will use most often all month. 2·10^5 squared is 4·10^10 operations: hours, not seconds, on any engine.",
+        callout: { type: "clue", text: "n ≤ 2·10^5 → you need O(n log n) or O(n). Any double loop is dead." },
+      },
+      {
+        kind: "widget",
+        widget: "complexity",
+        title: "Complexity lab",
+        task: "Set n to 10^5 and pick O(n^2). Which judge passes in 1 second, CPython or PyPy? Then switch to O(n log n) and check both again.",
+        props: { mode: "table", n: 100000 },
+      },
+      {
+        kind: "number",
+        teach: "Count the operations at the largest n, then divide by the engine speed. CPython does about 10^7 simple operations per second.",
+        prompt: "n = 3000 and your idea is O(n²). About how many seconds does it take in CPython?",
+        answer: 0.9,
+        tolerance: 0.15,
+        unit: "s",
+        explain: "3000 × 3000 = 9·10^6 operations. 9·10^6 / 10^7 = 0.9 s. Close to a 1-second limit in CPython; comfortable in PyPy (≈0.09 s).",
+      },
+      {
+        kind: "read",
+        title: "Hashing kills the inner loop",
+        body: "A **hash set** (Python `set`) stores values; a **[[hash map]]** (Python `dict`) stores key → value pairs. Both answer \"is x here?\" in O(1) on average, without scanning.\n\nMost \"Easy\" array problems are an O(n²) double loop where the inner loop is *searching for something you already saw*. Replace that inner loop with a lookup and you get O(n).",
+      },
+      {
+        kind: "read",
+        title: "Say the brute force, name the waste",
+        body: "Two Sum: find two indices whose values add to `target`. The **[[brute force]]** (the simplest correct idea) checks every pair i < j: O(n²).\n\nThe waste: for each x, the inner loop scans again for `target − x`. A map from value to index removes that scan.",
+        visual: { kind: "array", indices: true, rows: [{ label: "nums", items: TS, pointers: [P(0, "i"), P(1, "j", "accent")], tones: { 0: "accent" } }], caption: "Brute force: for each i, j scans the rest. target = 6" },
+        callout: { type: "move", text: "Say the brute force out loud, then name the waste. \"Brute force checks every pair, O(n²). The waste is scanning again for target − x. A map from value to index removes it: O(n).\"" },
+      },
+      {
+        kind: "read",
+        title: "One pass with a map: i = 0",
+        body: "nums = [3, 2, 4], target = 6. Walk once, left to right. At each x, ask the map: have I seen `target − x`?\n\ni = 0, x = 3. Need 6 − 3 = 3. The map is empty, so no. Store 3 → 0.",
+        visual: {
+          kind: "array",
+          indices: true,
+          rows: [
+            { label: "nums", items: TS, pointers: [P(0, "i", "accent")], tones: { 0: "accent" } },
+            { label: "seen", items: ["3→0"] },
+          ],
+        },
+      },
+      {
+        kind: "read",
+        title: "i = 1",
+        body: "i = 1, x = 2. Need 6 − 2 = 4. Is 4 in the map? No, only 3 is there. Store 2 → 1.\n\nThe lookup is one step, not a scan of everything before i.",
+        visual: {
+          kind: "array",
+          indices: true,
+          rows: [
+            { label: "nums", items: TS, pointers: [P(1, "i", "accent")], tones: { 1: "accent" } },
+            { label: "seen", items: ["3→0", "2→1"] },
+          ],
+        },
+      },
+      {
+        kind: "read",
+        title: "i = 2: found",
+        body: "i = 2, x = 4. Need 6 − 4 = 2. Is 2 in the map? Yes, at index 1. Return `[1, 2]`.\n\nOne pass, one lookup per element: O(n) time, O(n) extra memory.",
+        visual: {
+          kind: "array",
+          indices: true,
+          rows: [
+            { label: "nums", items: TS, pointers: [P(1, "partner", "good"), P(2, "i", "good")], tones: { 1: "good", 2: "good" } },
+            { label: "seen", items: ["3→0", "2→1"], tones: { 1: "good" } },
+          ],
+        },
+      },
+      {
+        kind: "quiz",
+        teach: "At each element x, the one-pass Two Sum asks the map whether it has already seen the partner value, target − x.",
+        prompt: "nums = [5, 1, 7], target = 8. At i = 2 (x = 7), which value does the code look up in the map?",
+        options: ["7", "1", "8", "15"],
+        answer: 1,
+        explain: "It looks up target − x = 8 − 7 = 1. The map has 1 → 1, so the answer is [1, 2].",
+      },
+      {
+        kind: "read",
+        title: "The skill is choosing the key",
+        body: "The map is easy. The real skill is choosing the **key**, the thing you look up:\n- the value itself (\"seen before?\")\n- the value's partner, `target − x`\n- a sorted tuple of letters (anagrams)\n- a count tuple, like 26 letter counts\n- a transform, like `a[i] − i`\n\nA good key makes \"the same in some way\" become \"equal\".",
+      },
+      {
+        kind: "read",
+        title: "Group by a canonical key",
+        body: "A **[[canonical key]]** is one fixed form that all \"same\" items share. For anagrams, sort the letters: \"eat\", \"tea\" and \"ate\" all become `('a', 'e', 't')`.\n\nThe key must be **hashable**: it cannot change after it is stored. A `tuple` is hashable; a `list` can change, so Python refuses it as a dict key.",
+        visual: {
+          kind: "table",
+          headers: ["word", "key = tuple(sorted(w))", "group"],
+          rows: [
+            ["eat", "('a', 'e', 't')", "1"],
+            ["tea", "('a', 'e', 't')", "1"],
+            ["tan", "('a', 'n', 't')", "2"],
+            ["ate", "('a', 'e', 't')", "1"],
+            ["nat", "('a', 'n', 't')", "2"],
+          ],
+        },
+      },
+      {
+        kind: "read",
+        title: "Count equal-key pairs in O(n)",
+        body: "\"Count pairs i < j with a[i] − i == a[j] − j.\" Turn each item into its key, count the keys, then each key seen c times gives **c·(c−1)/2** pairs.\n\nHere the keys are 3, 3, 3, 4. Key 3 appears 3 times: 3·2/2 = 3 pairs. Key 4 appears once: 0. Answer 3, with no double loop.",
+        visual: {
+          kind: "array",
+          indices: true,
+          rows: [
+            { label: "a", items: [3, 4, 5, 7] },
+            { label: "a[i] − i", items: [3, 3, 3, 4], tones: { 0: "accent", 1: "accent", 2: "accent" } },
+          ],
+        },
+      },
+      {
+        kind: "read",
+        title: "Hashing clues",
+        body: "- \"Have I seen this?\", \"find its partner\", \"count how many times\" → hash set or hash map.\n- \"Group things that are the same in some way\" → hash map with a canonical key.\n- \"Count pairs i < j with f(i) == f(j)\" → transform each item to a key, count keys, add c·(c−1)/2.\n- \"In O(n)\" on an unsorted array with no sort allowed → a set or map is doing the work.",
+        callout: { type: "clue", text: "\"Seen?\" / \"partner?\" / \"how many?\" → set or map. \"Same in some way\" → canonical key." },
+      },
+      {
+        kind: "read",
+        title: "The Day 1 template",
+        body: "Three small functions. `two_sum` finds a partner, `group_by_key` groups by a canonical key, and `count_equal_pairs` counts equal-key pairs.\n\nMental test for `two_sum([3, 2, 4], 6)`: i=0, need 3, not seen, store 3→0. i=1, need 4, not seen, store 2→1. i=2, need 2, seen at 1 → `[1, 2]`. Correct.",
+        visual: { kind: "code", lang: "python", code: DAY1_TEMPLATE },
+      },
+      {
+        kind: "code",
+        title: "Now type it yourself: Two Sum",
+        prompt: "Write `two_sum(nums, target)` from memory. Return `[j, i]` with j < i and `nums[j] + nums[i] == target`, or `[]` if there is no pair. One pass, a dict from value to index.",
+        starter: L("def two_sum(nums, target):", "    # value -> index map, one pass", "    pass"),
+        solution: TWO_SUM,
+        tests: [
+          { call: "two_sum([3, 2, 4], 6)", expect: "[1, 2]" },
+          { call: "two_sum([2, 7, 11, 15], 9)", expect: "[0, 1]" },
+          { call: "two_sum([3, 3], 6)", expect: "[0, 1]", label: "equal values" },
+          { call: "two_sum([1, 2], 10)", expect: "[]", label: "no pair" },
+          { call: "two_sum([], 5)", expect: "[]", label: "empty" },
+        ],
+        fromMemory: true,
+        teach: "For each index i and value x: if `target - x` is already in the map, return its index and i. Otherwise store x → i. Check before you store, so an element never pairs with itself.",
+        explain: "Checking before storing is what makes `[3, 3]` work and stops 3 pairing with itself in `[3]`.",
+      },
+      {
+        kind: "code",
+        title: "Group and count",
+        prompt: "Write `group_by_key(words)` (group anagrams with the key `tuple(sorted(w))`) and `count_equal_pairs(a, key)` (count pairs i < j whose `key(i, x)` values are equal, in O(n)).",
+        starter: L(
+          "from collections import Counter, defaultdict",
+          "",
+          "def group_by_key(words):",
+          "    pass",
+          "",
+          "def count_equal_pairs(a, key):",
+          "    pass",
+        ),
+        solution: GROUP_COUNT,
+        tests: [
+          { call: "sorted(sorted(g) for g in group_by_key([\"eat\", \"tea\", \"tan\", \"ate\", \"nat\", \"bat\"]))", expect: "[[\"ate\", \"eat\", \"tea\"], [\"bat\"], [\"nat\", \"tan\"]]" },
+          { call: "group_by_key([])", expect: "[]", label: "empty" },
+          { call: "count_equal_pairs([3, 4, 5, 7], lambda i, x: x - i)", expect: "3" },
+          { call: "count_equal_pairs([1, 1, 1, 1], lambda i, x: x)", expect: "6", label: "all equal" },
+          { call: "count_equal_pairs([1, 2, 3], lambda i, x: x)", expect: "0" },
+        ],
+        teach: "Grouping: a `defaultdict(list)` keyed by `tuple(sorted(w))`. Counting: a `Counter` of keys, then add `c * (c - 1) // 2` for each count c.",
+        explain: "Both are one pass plus a dictionary. The pair formula replaces the double loop.",
+      },
+      {
+        kind: "read",
+        title: "Hidden O(n) inside a loop",
+        body: "Some Python operations look like one step but scan the whole list. Put one inside a loop and your O(n) idea quietly becomes O(n²).",
+        callout: { type: "trap", text: "`x in some_list` and `some_list.count(x)` are O(n). Inside a loop they make your solution O(n²) without you noticing. Convert to a `set` or `Counter` once, outside the loop." },
+      },
+      {
+        kind: "quiz",
+        teach: "Membership in a list scans the list. Membership in a set is one hash lookup, O(1) on average.",
+        prompt: "A loop runs over n = 10^5 items and does `if x in seen_list:` each time, where `seen_list` grows to n items. What is the total complexity?",
+        options: ["O(n)", "O(n log n)", "O(n²)", "O(1)"],
+        answer: 2,
+        explain: "Each `in` on a list is O(n), done n times: O(n²), about 10^10 steps. Make `seen` a set and it drops to O(n).",
+      },
+      {
+        kind: "summary",
+        points: [
+          "Read the constraints before the story. n picks your budget: n ≤ 2·10^5 means O(n log n) or O(n).",
+          "Ops / 10^7 for CPython, ops / 10^8 for PyPy. Above 1 second means too slow.",
+          "A set or dict answers \"is x here?\" in O(1). Replace the searching inner loop with a lookup.",
+          "The skill is the key: the value, its partner `target − x`, a sorted tuple, a count tuple, or `a[i] − i`.",
+          "Equal-key pairs: count keys, add c·(c−1)/2.",
+          "`x in list` inside a loop is a hidden O(n²).",
+        ],
+      },
+    ],
+  },
+
+  /* ================================================================ */
+  /* Day 1 B: drill                                                   */
+  /* ================================================================ */
+  {
+    id: "ch04-l4",
+    day: 1,
+    title: "Day 1 drill: Constraints and hashing",
+    goal: "Name the budget and the hashing pattern for five disguised problems, then work today's problem list.",
+    minutes: 10,
+    steps: [
+      {
+        kind: "read",
+        title: "Recap",
+        body: "Today's two ideas:\n- **Constraints first.** n picks the budget before you think of a solution.\n- **Hashing.** A set or map turns the searching inner loop into one lookup.\n\nThis lesson drills spotting them, then gives you today's problems.",
+        visual: {
+          kind: "compare",
+          left: { title: "Constraints", points: ["n ≤ 20 → 2^n", "n ≤ 5000 → n²", "n ≤ 2·10^5 → n log n", "n ≤ 10^6 → n"] },
+          right: { title: "Hashing keys", points: ["value: seen?", "target − x: partner", "sorted tuple: group", "a[i] − i: count pairs"] },
+        },
+      },
+      {
+        kind: "widget",
+        widget: "triage",
+        title: "The 15-second scan",
+        task: "Run the 4-step scan on a few problems: how big is n, what does it want back, what does the input look like, which phrase triggers a pattern. Watch how n alone removes most candidates.",
+        props: { mode: "scan", upToDay: 1 },
+      },
+      {
+        kind: "quiz",
+        teach: "\"Have I seen this before?\" is a membership question, which a hash set answers in O(1).",
+        prompt: "Given 10^5 user IDs in arrival order, return the first ID that shows up a second time.",
+        options: ["Hash set, return on first hit", "Hash map keyed by sorted letters", "Try all 2^n subsets", "Double loop over all pairs"],
+        answer: 0,
+        explain: "Signal: \"shows up a second time\" means \"seen before?\". Add each ID to a set and return the first one already there.",
+      },
+      {
+        kind: "quiz",
+        teach: "When items are \"the same in some way\", map each one to a canonical key that equal items share.",
+        prompt: "Given a list of words, bucket together the ones that are rearrangements of each other.",
+        options: ["Hash set of words", "Hash map keyed by sorted letters (or a 26-count tuple)", "Count keys, add c·(c−1)/2", "Try all 2^n subsets"],
+        answer: 1,
+        explain: "Signal: \"rearrangements\" = same letters. Key = sorted letters or a 26-count tuple; bucket by key.",
+      },
+      {
+        kind: "read",
+        title: "Notice the signal",
+        body: "In both questions the story was about users and words, but the signal was one phrase: \"a second time\" (seen before) and \"rearrangements\" (same in some way). Train your eye to jump to that phrase, and to the size of n.",
+      },
+      {
+        kind: "quiz",
+        teach: "Small n allows slow algorithms. n ≤ 20 means 2^n ≈ 10^6 subsets is fine.",
+        prompt: "There are at most 18 tasks; choose a subset whose total time is exactly T.",
+        options: ["Hash set", "Try all 2^n subsets", "Hash map keyed by sorted letters", "One pass, O(n)"],
+        answer: 1,
+        explain: "Signal: n ≤ 18, tiny. 2^18 ≈ 2.6·10^5 subsets: try them all.",
+      },
+      {
+        kind: "quiz",
+        teach: "To count pairs i < j with equal f(i), transform each item to its key, count the keys, and add c·(c−1)/2 per key.",
+        prompt: "n up to 2·10^5. Count pairs i < j with a[i] − i == a[j] − j.",
+        options: ["Double loop over all pairs", "Key = a[i] − i, Counter, sum c·(c−1)/2", "Hash set, return on first hit", "Try all 2^n subsets"],
+        answer: 1,
+        explain: "Signal: \"count pairs with f(i) == f(j)\" and n = 2·10^5 (double loop is dead). Key = a[i] − i, count, add c·(c−1)/2.",
+      },
+      {
+        kind: "read",
+        title: "One more set trick: start only at run starts",
+        body: "\"Longest run x, x+1, x+2, … in O(n)\", unsorted. Put all values in a set. Only start counting at an x where **x − 1 is not in the set**: that x begins a run. From there, walk x+1, x+2, … while present.\n\nHere 100, 200 and 1 are starts. From 1 you count 1, 2, 3, 4: length 4. Values 4, 3, 2 are skipped as starts, because 3, 2, 1 exist.",
+        visual: {
+          kind: "array",
+          indices: true,
+          rows: [{ label: "nums", items: [100, 4, 200, 1, 3, 2], tones: { 0: "accent", 2: "accent", 3: "good" } }],
+          caption: "Accent and green: x − 1 is missing, so a run starts here",
+        },
+      },
+      {
+        kind: "quiz",
+        teach: "Put every value in a set. A run starts at x only when x − 1 is missing; from a start, walk upward while the next value is present.",
+        prompt: "Unsorted array of 10^5 integers. Find the longest run of values x, x+1, x+2, … present anywhere in the array, in O(n).",
+        options: ["Sort, then scan", "Hash set; start a count only where x − 1 is missing", "Double loop over all pairs", "Hash map keyed by sorted letters"],
+        answer: 1,
+        explain: "Signal: \"in O(n)\" on an unsorted array, so no sort. A set does the work; start counting only where x − 1 is missing.",
+      },
+      {
+        kind: "read",
+        title: "Before the problems",
+        body: "**10-minute constraint drill:** open LC 1, LC 128, LC 238 and LC 347. Read **only** the constraints section of each. Write the target complexity on paper. Then read the problem.\n\nFor the Codeforces rows, start from `template.py` and read the input format exactly.",
+        callout: { type: "trap", text: "On Codeforces, people craft tests that make Python's int hashing collide, so a `dict` of ints can blow up to O(n²). If a hash-map solution gets TLE there, key by `x ^ R` where `R = random.getrandbits(30)` is chosen once at start." },
+      },
+      {
+        kind: "practice",
+        title: "Day 1 problems (in order)",
+        intro: "Set a timer for each box, no AI, no hints. If the clock runs out before the stretch rows, move them to the Day 7 re-solve list. Never extend a box.",
+        problems: [
+          { ref: "LC 217 Contains Duplicate", tier: "warm", lvl: "E", box: 10, clue: "\"Seen before?\" → set" },
+          { ref: "LC 1 Two Sum", tier: "core", lvl: "E", box: 15, clue: "\"Find its partner\" → value→index map" },
+          { ref: "LC 49 Group Anagrams", tier: "core", lvl: "M", box: 20, clue: "\"Same in some way\" → canonical key" },
+          { ref: "LC 347 Top K Frequent Elements", tier: "core", lvl: "M", box: 20, clue: "Counter, then bucket by frequency (index = count) for O(n)" },
+          { ref: "LC 128 Longest Consecutive Sequence", tier: "core", lvl: "M", box: 25, clue: "\"O(n)\" + unsorted → set; only start counting at x where x−1 is absent" },
+          { ref: "LC 238 Product of Array Except Self", tier: "core", lvl: "M", box: 25, clue: "\"No division\" → product of everything left × everything right" },
+          { ref: "CSES — Distinct Numbers", tier: "stretch", lvl: "CSES", box: 15, clue: "n ≤ 2·10^5 → `len(set(a))`; this is an I/O test with your template" },
+          { ref: "Codeforces problemset, rating 800–1000, tag implementation, solve 2", tier: "stretch", lvl: "800–1000", box: 30, clue: "Practice reading the input format exactly; use `template.py`" },
+        ],
+      },
+      {
+        kind: "reveal",
+        prompt: "End-of-day check 1: n = 10^5 and your idea is O(n²). How many ops is that, and how long does it take in CPython and in PyPy?",
+        answer: "10^5 × 10^5 = 10^10 operations. CPython: 10^10 / 10^7 = 1000 s. PyPy: 10^10 / 10^8 = 100 s. Both are far over a 1–2 s limit, so you need O(n log n) or O(n).",
+      },
+      {
+        kind: "reveal",
+        prompt: "End-of-day check 2: why must a dict key for \"group anagrams\" be a `tuple` and not a `list`?",
+        answer: "Dict keys must be hashable, which means they cannot change after they are stored. A list can change, so Python refuses it as a key (TypeError: unhashable type). A tuple cannot change, so it works.",
+      },
+      {
+        kind: "reveal",
+        prompt: "End-of-day check 3: in LC 128, why is the set solution O(n) even though there is a `while` loop inside a `for` loop?",
+        answer: "The `while` only runs from a run start (x − 1 missing). Each value belongs to exactly one run, so across the whole `for` loop the `while` steps over each value at most once. Total work is O(n), not O(n²).",
+      },
+      {
+        kind: "summary",
+        points: [
+          "The signal is one phrase plus the size of n: \"seen?\", \"partner\", \"same in some way\", \"count pairs\", n ≤ 20.",
+          "Do the 10-minute constraint drill before every problem set this week.",
+          "On Codeforces, if a dict solution gets TLE, key by `x ^ R` with a random R.",
+          "Unfinished stretch rows go to the Day 7 re-solve list. Never extend a box.",
+          B_END,
+        ],
+      },
+    ],
+  },
+
+  /* ================================================================ */
+  /* Day 2 A: two pointers + sorting                                  */
+  /* ================================================================ */
+  {
+    id: "ch04-l5",
+    day: 2,
+    title: "Day 2: Two pointers and sorting",
+    goal: "See \"sorted\" or \"can be sorted\" and reach for two pointers; write the 3Sum duplicate-skip from memory.",
+    minutes: 12,
+    steps: [
+      {
+        kind: "read",
+        title: "Two fingers on one array",
+        body: "**Goal:** see \"sorted\" or \"can be sorted\" and reach for two pointers; write the 3Sum duplicate-skip from memory.\n\nYesterday a hash map removed the inner loop. Today a different trick does it on a **sorted** array: two indexes that move toward each other, and each move throws away an element for good.",
+      },
+      {
+        kind: "quiz",
+        guess: true,
+        prompt: "Take a guess. The array is sorted from small to large. You add the leftmost and the rightmost value, and the sum is too small. Which move can make the sum bigger?",
+        options: ["Move the left index one step right", "Move the right index one step left", "Either move works"],
+        answer: 0,
+        explain: "Moving left to the right picks a bigger (or equal) value, so the sum can only grow. Moving right to the left picks a smaller value, so the sum can only shrink.",
+      },
+      {
+        kind: "read",
+        title: "Pair sum: start at both ends",
+        body: "**[[Two pointers|two pointers]]**: two indexes, `i` at the left end and `j` at the right end of a sorted array. Look at `a[i] + a[j]`:\n- too small → move `i` right\n- too big → move `j` left\n\nTarget 15. Start: 1 + 15 = 16, too big. Move `j` left.",
+        visual: { kind: "array", indices: true, rows: [{ label: "a", items: PS, pointers: [P(0, "i", "accent"), P(5, "j", "accent")], tones: { 0: "accent", 5: "accent" } }], caption: "sum = 16 > 15" },
+      },
+      {
+        kind: "read",
+        title: "Too small: move i",
+        body: "1 + 11 = 12, too small. Moving `j` left would only make it smaller. So move `i` right.\n\n15 is now gone for good: it was too big even with the smallest value, 1.",
+        visual: { kind: "array", indices: true, rows: [{ label: "a", items: PS, pointers: [P(0, "i", "accent"), P(4, "j", "accent")], tones: { 0: "accent", 4: "accent", 5: "bad" } }], caption: "sum = 12 < 15" },
+      },
+      {
+        kind: "read",
+        title: "Still too small",
+        body: "2 + 11 = 13, still too small. Move `i` right again.\n\n1 is gone for good: it was too small even with the biggest value left, 11.",
+        visual: { kind: "array", indices: true, rows: [{ label: "a", items: PS, pointers: [P(1, "i", "accent"), P(4, "j", "accent")], tones: { 0: "bad", 1: "accent", 4: "accent", 5: "bad" } }], caption: "sum = 13 < 15" },
+      },
+      {
+        kind: "read",
+        title: "Found",
+        body: "4 + 11 = 15. Return `(2, 4)`.\n\nEach step removed one element for good, so the whole scan is at most n steps: **O(n)**, with no extra memory.",
+        visual: { kind: "array", indices: true, rows: [{ label: "a", items: PS, pointers: [P(2, "i", "good"), P(4, "j", "good")], tones: { 0: "bad", 1: "bad", 2: "good", 4: "good", 5: "bad" } }], caption: "sum = 15, found" },
+      },
+      {
+        kind: "read",
+        title: "Why each move is safe",
+        body: "The deeper idea: **each move discards candidates you have proved useless.** If `a[i] + a[j]` is too small and `a[j]` is the biggest value left, then `a[i]` with any other value is also too small. So `i` can go.\n\nWhen you cannot say why a move is safe, two pointers is probably wrong.",
+        visual: { kind: "code", lang: "python", code: PAIR_SUM },
+      },
+      {
+        kind: "widget",
+        widget: "two-pointers",
+        title: "Pair-sum lab",
+        task: "Step through. Before each step, say out loud which pointer moves and why. Then try a target that no pair reaches and watch the pointers cross.",
+        props: { mode: "pair-sum", nums: PS, target: 15 },
+      },
+      {
+        kind: "quiz",
+        teach: "On a sorted array, a sum that is too small can only grow by moving the left pointer right; a sum that is too big can only shrink by moving the right pointer left.",
+        prompt: "a = [2, 5, 8, 12], target = 17. i = 0 and j = 3. Which pointer moves?",
+        options: ["i moves right", "j moves left", "Both move", "Stop: found"],
+        answer: 0,
+        explain: "2 + 12 = 14 < 17, too small. Only moving i right can raise the sum. Next: 5 + 12 = 17, found.",
+      },
+      {
+        kind: "code",
+        title: "Pair sum on a sorted array",
+        prompt: "Write `pair_sum(a, target)` for a sorted list. Return the tuple `(i, j)` with `a[i] + a[j] == target`, or `(-1, -1)`.",
+        starter: L("def pair_sum(a, target):", "    pass"),
+        solution: PAIR_SUM,
+        tests: [
+          { call: "pair_sum([1, 2, 4, 7, 11, 15], 15)", expect: "(2, 4)" },
+          { call: "pair_sum([2, 7], 9)", expect: "(0, 1)" },
+          { call: "pair_sum([1, 2, 3], 100)", expect: "(-1, -1)", label: "no pair" },
+          { call: "pair_sum([], 5)", expect: "(-1, -1)", label: "empty" },
+          { call: "pair_sum([5], 10)", expect: "(-1, -1)", label: "one element" },
+        ],
+        teach: "Start i = 0 and j = len(a) − 1. While i < j: compare the sum to the target and move exactly one pointer.",
+        explain: "`while i < j` (not `<=`) stops an element pairing with itself.",
+      },
+      {
+        kind: "read",
+        title: "Move the shorter wall",
+        body: "LC 11 Container With Most Water: pick two walls; water = shorter height × distance. Start at both ends.\n\nThe left wall (1) is shorter. Any container using it with a *closer* wall is narrower and still at most 1 high, so it can only be worse. Discard it: move the shorter wall.",
+        visual: {
+          kind: "array",
+          indices: true,
+          rows: [{ label: "height", items: [1, 8, 6, 2, 5, 4, 8, 3, 7], pointers: [P(0, "L", "bad"), P(8, "R", "accent")], ranges: [{ from: 0, to: 8, tone: "accent", label: "min(1, 7) × 8 = 8" }] }],
+        },
+      },
+      {
+        kind: "read",
+        title: "Sorting is a free move",
+        body: "When the answer does not depend on original positions, sort first. Sorting is O(n log n), within budget for n ≤ 2·10^5, and it makes two pointers possible.\n\nIf the problem asks for **original indices**, sorting loses them. Two fixes: sort `(value, index)` pairs, or use a hash map instead (Day 1).",
+      },
+      {
+        kind: "quiz",
+        teach: "Sorting moves elements, so their original positions are lost. Keep positions by sorting (value, index) pairs, or avoid sorting with a hash map.",
+        prompt: "Unsorted array of 10^5 numbers. Return the **indices** of two numbers that sum to k. What is the simplest safe tool?",
+        options: ["Sort, then two pointers on the values", "Hash map from value to index (Day 1)", "Try all pairs", "Read/write pointers"],
+        answer: 1,
+        explain: "A plain sort loses the indices you must return. A value → index map finds the pair in one pass. (Sorting (value, index) pairs also works.)",
+      },
+      {
+        kind: "read",
+        title: "3Sum: fix one, two pointers on the rest",
+        body: "LC 15: all unique triples that sum to 0. Sort, then fix `i` and run pair sum on the part to its right, looking for `−nums[i]`.\n\nSorted: [−4, −1, −1, 0, 1, 2]. i = 0 (−4): no pair on the right reaches 4. Next, i = 1 (−1): lo = 2, hi = 5. −1 − 1 + 2 = 0. Record `[-1, -1, 2]`, then move both.",
+        visual: { kind: "array", indices: true, rows: [{ label: "nums", items: T3, pointers: [P(1, "i", "accent"), P(2, "lo", "good"), P(5, "hi", "good")], tones: { 0: "bad", 1: "accent", 2: "good", 5: "good" } }], caption: "sum = 0 → record [-1, -1, 2]" },
+      },
+      {
+        kind: "read",
+        title: "Second triple",
+        body: "lo = 3 (0), hi = 4 (1). −1 + 0 + 1 = 0. Record `[-1, 0, 1]`. Move both; now lo > hi, so this i is done.\n\nAfter each match, `lo` also skips any value equal to the one it just used, so the same triple is never recorded twice.",
+        visual: { kind: "array", indices: true, rows: [{ label: "nums", items: T3, pointers: [P(1, "i", "accent"), P(3, "lo", "good"), P(4, "hi", "good")], tones: { 0: "bad", 1: "accent", 3: "good", 4: "good" } }], caption: "sum = 0 → record [-1, 0, 1]" },
+      },
+      {
+        kind: "read",
+        title: "Skip the duplicate first value",
+        body: "i = 2 is −1 again, the same as `nums[1]`. Every triple it could start was already found from i = 1. So skip it: `if i > 0 and nums[i] == nums[i - 1]: continue`.\n\ni = 3 (0) finds nothing new. Result: 2 triples.",
+        visual: { kind: "array", indices: true, rows: [{ label: "nums", items: T3, pointers: [P(2, "i", "warn")], tones: { 1: "neutral", 2: "warn" } }], caption: "nums[2] == nums[1] → skip" },
+        callout: { type: "mistake", text: "In 3Sum, skipping duplicates *before* recording the match loses valid triples like `[-1, -1, 2]`. Record first, then skip." },
+      },
+      {
+        kind: "read",
+        title: "The 3Sum template",
+        body: "Sort, loop `i`, skip a duplicate first value, then pair sum on `[i+1, n−1]` with a duplicate skip after each match.\n\nMental test for `three_sum([-1, 0, 1, 2, -1, -4])`: sorted `[-4, -1, -1, 0, 1, 2]`. i=1 (−1) finds `[-1, -1, 2]`, then `[-1, 0, 1]`. i=2 is a duplicate, skipped. 2 triples. Correct.",
+        visual: { kind: "code", lang: "python", code: THREE_SUM },
+      },
+      {
+        kind: "code",
+        title: "Now type it yourself: 3Sum",
+        prompt: "Write `three_sum(nums)` from memory: all unique triples that sum to 0, with the two duplicate skips.",
+        starter: L("def three_sum(nums):", "    # sort, fix i, two pointers on the rest, skip duplicates", "    pass"),
+        solution: THREE_SUM,
+        tests: [
+          { call: "sorted(three_sum([-1, 0, 1, 2, -1, -4]))", expect: "[[-1, -1, 2], [-1, 0, 1]]" },
+          { call: "three_sum([0, 0, 0, 0])", expect: "[[0, 0, 0]]", label: "all equal" },
+          { call: "three_sum([0, 1, 1])", expect: "[]" },
+          { call: "three_sum([])", expect: "[]", label: "empty" },
+          { call: "sorted(three_sum([-2, 0, 1, 1, 2]))", expect: "[[-2, 0, 2], [-2, 1, 1]]" },
+        ],
+        fromMemory: true,
+        teach: "Sort. For each i, skip it if it equals the previous value. Then lo = i + 1, hi = n − 1: move lo up if the sum is below 0, hi down if above. On a match, record, move both, and push lo past equal values.",
+        explain: "Two skips: one for the first value (`nums[i] == nums[i - 1]`), one for the second value after a match. Record before you skip.",
+      },
+      {
+        kind: "read",
+        title: "Read/write pointers",
+        body: "For in-place filtering, both pointers move left to right. **Read pointer** `r` scans every element. **Write pointer** `w` marks where the next kept element goes.\n\nRemove every 3 from [3, 2, 2, 3, 4]. r = 0 sees 3: skip. r = 1 sees 2: write at w = 0. r = 2 sees 2: write at w = 1. Now w = 2.",
+        visual: { kind: "array", indices: true, rows: [{ label: "a", items: [2, 2, 2, 3, 4], pointers: [P(2, "w", "good"), P(2, "r", "accent")], tones: { 0: "good", 1: "good" } }], caption: "After r = 2: kept part is a[0..1]" },
+      },
+      {
+        kind: "read",
+        title: "Read/write: finish",
+        body: "r = 3 sees 3: skip. r = 4 sees 4: write at w = 2, then w = 3. Return 3: the first 3 cells, [2, 2, 4], are the answer. What is after them does not matter.\n\nOne pass, O(1) extra memory, and the kept elements stay in order.",
+        visual: { kind: "code", lang: "python", code: COMPACT },
+      },
+      {
+        kind: "code",
+        title: "Compact in place",
+        prompt: "Write `compact(a, keep)`: move every element where `keep(x)` is True to the front, in order, and return the new length.",
+        starter: L("def compact(a, keep):", "    pass"),
+        solution: COMPACT,
+        tests: [
+          { call: "(lambda a: (compact(a, lambda x: x != 3), a[:3]))([3, 2, 2, 3, 4])", expect: "(3, [2, 2, 4])" },
+          { call: "(lambda a: (compact(a, lambda x: x != 0), a[:3]))([0, 1, 0, 3, 12])", expect: "(3, [1, 3, 12])" },
+          { call: "compact([], lambda x: True)", expect: "0", label: "empty" },
+          { call: "compact([7, 7, 7], lambda x: x != 7)", expect: "0", label: "all removed" },
+        ],
+        teach: "w starts at 0. For each r: if keep(a[r]), copy a[r] to a[w] and add 1 to w. Return w.",
+        explain: "This is LC 27 (Remove Element) and the core of LC 283 (Move Zeroes) and LC 26 (Remove Duplicates).",
+      },
+      {
+        kind: "read",
+        title: "Two-pointer clues",
+        body: "- Sorted array + pair/triple with a target sum → two pointers from both ends.\n- \"In place\", \"remove\", \"move to the end\", \"O(1) extra space\" → read/write pointers.\n- Order of input does not matter and n ≤ 2·10^5 → sort first; sorting is only O(n log n).\n- \"Pair the largest with the smallest\" (boats, teams, pairs with a limit) → sort + two pointers.\n- Three-way partition (0s, 1s, 2s) → three pointers: low, mid, high.",
+        callout: { type: "clue", text: "\"Sorted\" + target sum → both ends. \"In place\" → read/write." },
+      },
+      {
+        kind: "summary",
+        points: [
+          "On a sorted array, the sum tells you which pointer to move. Each move discards an element for good: O(n).",
+          "If you cannot say why a move is safe, two pointers is probably wrong. Container: move the shorter wall.",
+          "Sort when positions do not matter. Need original indices? Sort (value, index) pairs or use a hash map.",
+          "3Sum: sort, fix i, pair sum on the rest; record first, then skip duplicates.",
+          "Read/write pointers filter in place: r scans, w marks the next kept slot.",
+        ],
+      },
+    ],
+  },
+
+  /* ================================================================ */
+  /* Day 2 B: drill                                                   */
+  /* ================================================================ */
+  {
+    id: "ch04-l6",
+    day: 2,
+    title: "Day 2 drill: Two pointers and sorting",
+    goal: "Tell both-ends, sort-first, fix-one and read/write pointers apart from a hash map, then work today's list.",
+    minutes: 10,
+    steps: [
+      {
+        kind: "read",
+        title: "Recap",
+        body: "Today's shapes:\n- **Both ends** on a sorted array: move the pointer that can fix the sum.\n- **Sort first** when positions do not matter.\n- **Fix one + two pointers** for triples (3Sum).\n- **Read/write** for in-place filtering.\n- **Hash map** (Day 1) when you need original indices.",
+        visual: {
+          kind: "compare",
+          left: { title: "Two pointers", points: ["sorted or sortable", "pair/triple target", "in place, O(1) space"] },
+          right: { title: "Hash map", points: ["unsorted, keep indices", "\"find its partner\"", "O(n) extra memory"] },
+        },
+      },
+      {
+        kind: "quiz",
+        teach: "On a sorted array, a pair with a target sum is found by two pointers that start at both ends and move inward.",
+        prompt: "A sorted list of prices. Is there a pair of items that costs exactly B?",
+        options: ["Two pointers from both ends", "Read/write pointers", "Hash set, return on first hit", "Try all 2^n subsets"],
+        answer: 0,
+        explain: "Signal: \"sorted\" + \"pair\" + exact target. Start at both ends.",
+      },
+      {
+        kind: "quiz",
+        teach: "When the best move is to pair the largest with the smallest, sort first, then use one pointer at each end.",
+        prompt: "People have weights; each boat carries at most two people and at most `limit` kg. Minimum boats.",
+        options: ["Hash map from weight to count", "Sort + two pointers, pair heaviest with lightest", "Read/write pointers", "Fix one, two pointers on the rest"],
+        answer: 1,
+        explain: "Signal: \"at most two\" + a limit = pair the largest with the smallest. Sort, the heaviest always boards; the lightest joins if it fits.",
+      },
+      {
+        kind: "read",
+        title: "Notice the signal",
+        body: "\"Sorted\" was said out loud in the first one. In the boats one it was hidden: the order of people does not matter, so you may sort. Always ask: does the answer depend on the original order? If not, sorting is a free move.",
+      },
+      {
+        kind: "quiz",
+        teach: "In-place removal keeps a read pointer that scans everything and a write pointer that marks where the next kept element goes.",
+        prompt: "Remove every occurrence of value v from an array in place and return the new length.",
+        options: ["Two pointers from both ends", "Read/write pointers", "Hash set", "Sort, then scan"],
+        answer: 1,
+        explain: "Signal: \"in place\" + \"remove\" + \"return the new length\". r scans, w writes.",
+      },
+      {
+        kind: "quiz",
+        teach: "For triples, sort, fix the first element, and run two pointers on the rest of the array.",
+        prompt: "Find three numbers whose sum is closest to a target.",
+        options: ["Hash map from value to index", "Sort, fix one, two pointers, track best |sum − target|", "Read/write pointers", "Try all triples"],
+        answer: 1,
+        explain: "Signal: \"three numbers\" + a target sum. Same as 3Sum, but keep the best |sum − target| instead of exact matches.",
+      },
+      {
+        kind: "read",
+        title: "Notice the signal",
+        body: "\"Three numbers\" with a sum is always the 3Sum shape: sort, fix one, two pointers. The next one looks like Two Sum II, but read the last word of the question carefully.",
+      },
+      {
+        kind: "quiz",
+        teach: "Sorting moves elements and loses their original positions. If the answer is positions, use a value → index map instead.",
+        prompt: "Unsorted array of 10^5 numbers. Return the **indices** of two numbers that sum to k.",
+        options: ["Sort + two pointers from both ends", "Hash map (Day 1)", "Read/write pointers", "Fix one, two pointers on the rest"],
+        answer: 1,
+        explain: "Signal: \"unsorted\" + \"indices\". Sorting would lose the indices, so use the Day 1 value → index map.",
+      },
+      {
+        kind: "read",
+        title: "Three pointers: Sort Colors",
+        body: "LC 75: sort 0s, 1s and 2s in one pass. **low** = next slot for a 0, **high** = next slot for a 2, **mid** scans.\n- a[mid] is 0: swap with low; low and mid move right.\n- a[mid] is 1: mid moves right.\n- a[mid] is 2: swap with high; high moves left. mid stays, because the swapped-in value is unchecked.\n\nStop when mid passes high.",
+        visual: { kind: "array", indices: true, rows: [{ label: "a", items: [0, 0, 1, 2, 1, 2, 2], pointers: [P(2, "low", "good"), P(3, "mid", "accent"), P(4, "high", "warn")], tones: { 0: "good", 1: "good", 5: "warn", 6: "warn" } }], caption: "a[mid] = 2 → swap with high" },
+      },
+      {
+        kind: "read",
+        title: "Sorting by two keys",
+        body: "Many two-pointer problems start with a sort by more than one field.",
+        callout: { type: "trap", text: "`a.sort(key=lambda p: (p[0], -p[1]))` sorts by first field ascending, second descending. Python's sort is stable, so you can also sort twice: by the secondary key first, then by the primary key." },
+      },
+      {
+        kind: "widget",
+        widget: "two-pointers",
+        title: "Palindrome warm-up",
+        task: "Warm-up for LC 125: step through the palindrome check. Watch both pointers skip characters that are not letters or digits, then compare.",
+        props: { mode: "palindrome" },
+      },
+      {
+        kind: "practice",
+        title: "Day 2 problems (in order)",
+        intro: "Set a timer for each box, no AI, no hints. If the clock runs out before the stretch rows, move them to the Day 7 re-solve list. Never extend a box.",
+        problems: [
+          { ref: "LC 125 Valid Palindrome", tier: "warm", lvl: "E", box: 10, clue: "Compare from both ends; skip non-alphanumerics" },
+          { ref: "LC 167 Two Sum II - Input Array Is Sorted", tier: "core", lvl: "M", box: 15, clue: "\"Sorted\" + pair sum → both ends" },
+          { ref: "LC 15 3Sum", tier: "core", lvl: "M", box: 25, clue: "Sort, fix one, two pointers on the rest; skip duplicates" },
+          { ref: "LC 11 Container With Most Water", tier: "core", lvl: "M", box: 20, clue: "Move the shorter wall; it can never do better" },
+          { ref: "LC 75 Sort Colors", tier: "core", lvl: "M", box: 20, clue: "Three values, one pass → low/mid/high pointers" },
+          { ref: "LC 42 Trapping Rain Water", tier: "stretch", lvl: "H", box: 35, clue: "Water at i = min(max left, max right) − h; move the side with the smaller max" },
+          { ref: "CSES — Ferris Wheel", tier: "stretch", lvl: "CSES", box: 20, clue: "Max two per gondola → sort, pair heaviest with lightest if it fits" },
+          { ref: "Codeforces problemset, rating 900–1100, tags two pointers or sortings, solve 1–2", tier: "stretch", lvl: "900–1100", box: 30, clue: "Ask \"does sorting lose information I need?\" before you sort" },
+        ],
+      },
+      {
+        kind: "reveal",
+        prompt: "End-of-day check 1: in pair-sum on a sorted array, why is it safe to move `i` right when the sum is too small?",
+        answer: "`a[j]` is the largest value still in range. If `a[i] + a[j]` is already too small, `a[i]` plus any other remaining value is also too small. So `a[i]` can never be in the answer, and dropping it loses nothing.",
+      },
+      {
+        kind: "reveal",
+        prompt: "End-of-day check 2: in LC 11, why move the shorter wall and not the taller one?",
+        answer: "Water is limited by the shorter wall. Any container that keeps the shorter wall and a closer partner is narrower and no taller, so it is worse. Moving the taller wall can never help; moving the shorter one is the only move that might.",
+      },
+      {
+        kind: "reveal",
+        prompt: "End-of-day check 3: when does sorting break a problem, and what are the two fixes?",
+        answer: "When the answer depends on original positions, such as returning indices. Fix 1: sort `(value, index)` pairs so each value keeps its index. Fix 2: do not sort; use a hash map (Day 1).",
+      },
+      {
+        kind: "summary",
+        points: [
+          "\"Sorted\" or \"order does not matter\" + pair/triple → two pointers. \"Indices\" on unsorted input → hash map.",
+          "\"In place\" / \"remove\" / \"O(1) space\" → read/write pointers.",
+          "0s, 1s and 2s in one pass → low/mid/high; mid stays after a swap with high.",
+          "Unfinished stretch rows go to the Day 7 re-solve list.",
+          B_END,
+        ],
+      },
+    ],
+  },
+
+  /* ================================================================ */
+  /* Day 3 A: sliding window                                          */
+  /* ================================================================ */
+  {
+    id: "ch04-l7",
+    day: 3,
+    title: "Day 3: Sliding window",
+    goal: "Write the variable-size window (grow right, shrink left) without thinking, and know when a window does not work.",
+    minutes: 12,
+    steps: [
+      {
+        kind: "read",
+        title: "A window that only moves forward",
+        body: "**Goal:** write the variable-size window (grow right, shrink left) without thinking, and know when a window does **not** work.\n\nMany problems ask for the longest or shortest **[[subarray]]** (a run of neighbouring elements) or **[[substring]]** with some rule. Checking every start and end is O(n²). The window does it in one pass.",
+      },
+      {
+        kind: "quiz",
+        guess: true,
+        prompt: "Take a guess. You want the longest piece of \"abcbd\" with no repeated letter. Can one left-to-right pass find it, or must you check every start and end?",
+        options: ["One pass is enough", "You must check every start and end"],
+        answer: 0,
+        explain: "One pass is enough. Keep a window with a left and a right edge. Grow the right edge; when a letter repeats, move the left edge until it does not. Both edges only move forward.",
+      },
+      {
+        kind: "read",
+        title: "Grow right",
+        body: "A **[[sliding window]]** is a range `[left, right]` that only moves forward. `right` steps every iteration; `left` moves only when the window breaks the rule.\n\nRule: no repeated letter. right = 0, 1, 2 adds a, b, c. All different, so the window is valid. Best = 3.",
+        visual: { kind: "array", indices: true, rows: [{ label: "s", items: SW, pointers: [P(0, "L", "accent"), P(2, "R", "accent")], ranges: [{ from: 0, to: 2, tone: "good", label: "len 3" }] }], caption: "best = 3" },
+      },
+      {
+        kind: "read",
+        title: "The rule breaks",
+        body: "right = 3 adds b. Now b appears twice. The window \"abcb\" is **invalid**.\n\nDo not restart. Keep `right` where it is and shrink from the left until the window is valid again.",
+        visual: { kind: "array", indices: true, rows: [{ label: "s", items: SW, pointers: [P(0, "L", "accent"), P(3, "R", "bad")], ranges: [{ from: 0, to: 3, tone: "bad", label: "b twice" }], tones: { 1: "bad", 3: "bad" } }], caption: "invalid: shrink" },
+      },
+      {
+        kind: "read",
+        title: "Shrink left",
+        body: "Remove a: left = 1. Still two b's. Remove b: left = 2. Now the window \"cb\" is valid. Its length is 2, so best stays 3.\n\n`left` jumped two steps, but it will never move back.",
+        visual: { kind: "array", indices: true, rows: [{ label: "s", items: SW, pointers: [P(2, "L", "accent"), P(3, "R", "accent")], ranges: [{ from: 2, to: 3, tone: "good", label: "len 2" }], tones: { 0: "neutral", 1: "neutral" } }], caption: "valid again" },
+      },
+      {
+        kind: "read",
+        title: "Grow again",
+        body: "right = 4 adds d. \"cbd\" is valid, length 3. Best = 3.\n\nWhy is this O(n) even with a `while` inside the `for`? Each index **enters once** (when `right` reaches it) and **leaves once** (when `left` passes it). That is at most 2n moves in total.",
+        visual: { kind: "array", indices: true, rows: [{ label: "s", items: SW, pointers: [P(2, "L", "accent"), P(4, "R", "accent")], ranges: [{ from: 2, to: 4, tone: "good", label: "len 3" }] }], caption: "answer 3" },
+      },
+      {
+        kind: "widget",
+        widget: "sliding-window",
+        title: "Longest-window lab",
+        task: "Step through \"abcabcbb\". Each time a letter repeats, predict where L will land before you press Step. The answer should be 3.",
+        props: { mode: "longest", s: "abcabcbb" },
+      },
+      {
+        kind: "read",
+        title: "The rule must be monotone",
+        body: "The window works only if the rule is **[[monotone|monotonicity]]**:\n- for \"longest\": if a window is valid, every smaller window inside it is valid too;\n- for \"shortest\": if a window is valid, every bigger window containing it is valid too.\n\nWith positive numbers, growing a window only increases its sum, so \"sum ≥ target\" is monotone. With negatives it is not, and the window gives wrong answers.",
+      },
+      {
+        kind: "read",
+        title: "Negatives break it",
+        body: "Shortest subarray with sum ≥ 6 in [2, −5, 6]. The window adds 2 (sum 2), then −5 (sum −3), then 6 (sum 3). The sum never reaches 6, so it never shrinks and reports \"none\".\n\nBut [6] alone works. The −5 hid it. Adding an element did not make the sum bigger, so the rule was not monotone.",
+        visual: { kind: "array", indices: true, rows: [{ label: "nums", items: [2, -5, 6], pointers: [P(0, "L", "accent"), P(2, "R", "accent")], ranges: [{ from: 0, to: 2, tone: "bad", label: "sum 3" }], tones: { 1: "bad", 2: "good" } }], caption: "The window misses [6]" },
+      },
+      {
+        kind: "quiz",
+        teach: "A sum window needs adding an element to never lower the sum. That holds only when no value is negative.",
+        prompt: "For which input can a sliding window on the sum give a wrong answer?",
+        options: ["[3, 1, 4, 1]", "[2, 0, 5]", "[4, −3, 2]", "[7, 7, 7]"],
+        answer: 2,
+        explain: "Only [4, −3, 2] has a negative value. There, growing the window can lower the sum, so the rule is not monotone.",
+      },
+      {
+        kind: "read",
+        title: "Three shapes",
+        body: "Three shapes cover almost everything:\n- **Longest valid:** add right; `while` invalid, remove left; record the length.\n- **Shortest valid:** add right; `while` valid, record the length, remove left.\n- **Count subarrays with at most k:** after shrinking, every subarray ending at `right` and starting in `[left, right]` is valid, so add `right − left + 1`.",
+      },
+      {
+        kind: "read",
+        title: "Shortest: right = 3",
+        body: "Shortest subarray with sum ≥ 7 in [2, 3, 1, 2, 4, 3]. Grow until valid: at right = 3 the sum is 8 ≥ 7.\n\nValid, so record length 4, then drop 2 from the left: sum 6. Not valid, so stop shrinking.",
+        visual: { kind: "array", indices: true, rows: [{ label: "nums", items: SH, pointers: [P(0, "L", "accent"), P(3, "R", "accent")], ranges: [{ from: 0, to: 3, tone: "good", label: "sum 8, len 4" }] }], caption: "best = 4" },
+      },
+      {
+        kind: "read",
+        title: "Shortest: right = 4",
+        body: "Add 4: sum 10. Valid: record 4, drop 3 → sum 7. Still valid: record 3, drop 1 → sum 6. Stop.\n\nThe `while` can shrink several times in one step. That is fine: `left` still only moves forward.",
+        visual: { kind: "array", indices: true, rows: [{ label: "nums", items: SH, pointers: [P(2, "L", "accent"), P(4, "R", "accent")], ranges: [{ from: 2, to: 4, tone: "good", label: "sum 7, len 3" }], tones: { 0: "neutral", 1: "neutral" } }], caption: "best = 3" },
+      },
+      {
+        kind: "read",
+        title: "Shortest: right = 5",
+        body: "Add 3: sum 9. Record 3, drop 2 → 7. Record 2, drop 4 → 3. Stop.\n\nAnswer 2, the window `[4, 3]`.",
+        visual: { kind: "array", indices: true, rows: [{ label: "nums", items: SH, pointers: [P(4, "L", "good"), P(5, "R", "good")], ranges: [{ from: 4, to: 5, tone: "good", label: "sum 7, len 2" }], tones: { 0: "neutral", 1: "neutral", 2: "neutral", 3: "neutral" } }], caption: "best = 2" },
+      },
+      {
+        kind: "read",
+        title: "Counting with at most k",
+        body: "Count subarrays with at most k = 2 distinct values in [1, 2, 1, 3]. After shrinking, every start from `left` to `right` gives a valid subarray ending at `right`: add `right − left + 1`.\n\n\"**Exactly** k\" is hard to window directly, but exactly(k) = atMost(k) − atMost(k − 1).",
+        visual: {
+          kind: "table",
+          headers: ["right", "window after shrink", "add right − left + 1", "total"],
+          rows: [
+            ["0", "[1]", "0 − 0 + 1 = 1", "1"],
+            ["1", "[1, 2]", "1 − 0 + 1 = 2", "3"],
+            ["2", "[1, 2, 1]", "2 − 0 + 1 = 3", "6"],
+            ["3", "3 distinct → shrink to [1, 3], left = 2", "3 − 2 + 1 = 2", "8"],
+          ],
+        },
+      },
+      {
+        kind: "number",
+        teach: "After the window is valid, every subarray that ends at `right` and starts anywhere from `left` to `right` is valid, so you add right − left + 1.",
+        prompt: "Counting subarrays with at most k distinct. After shrinking, left = 2 and right = 6. How many subarrays do you add at this step?",
+        answer: 5,
+        tolerance: 0.5,
+        explain: "right − left + 1 = 6 − 2 + 1 = 5: the subarrays starting at 2, 3, 4, 5 and 6, all ending at 6.",
+      },
+      {
+        kind: "read",
+        title: "Fixed-size window",
+        body: "When the length k is fixed, add one and drop one. Start with `cur = sum(a[:k])`, then for `i` from k to n − 1: `cur += a[i] - a[i - k]`.\n\nk = 4 in [1, 12, −5, −6, 50, 3]: first sum 2. i = 4: +50 − 1 = 51. i = 5: +3 − 12 = 42. Best 51. A fixed window works with negatives, because there is no shrink decision.",
+        visual: {
+          kind: "array",
+          indices: true,
+          rows: [
+            { label: "i = 4", items: [1, 12, -5, -6, 50, 3], ranges: [{ from: 1, to: 4, tone: "good", label: "51" }], tones: { 0: "bad", 4: "accent" } },
+            { label: "i = 5", items: [1, 12, -5, -6, 50, 3], ranges: [{ from: 2, to: 5, tone: "accent", label: "42" }], tones: { 1: "bad", 5: "accent" } },
+          ],
+        },
+      },
+      {
+        kind: "read",
+        title: "Window clues",
+        body: "- \"Subarray\" or \"substring\" + longest / shortest / at most / at least → sliding window.\n- \"At most k distinct / replacements / zeros flipped\" → longest valid window.\n- \"Shortest subarray with sum ≥ target\", all values positive → shrink while valid.\n- \"Exactly k\" → atMost(k) − atMost(k − 1).\n- Fixed length k (\"every block of k\", \"anagram of p inside s\") → fixed window, add one, drop one.\n- Negative values → **not** a window: [[prefix sums|prefix sum]] + hash map (Day 4).",
+        callout: { type: "clue", text: "Subarray/substring + longest/shortest/at most → window. Negatives → not a window." },
+      },
+      {
+        kind: "read",
+        title: "The Day 3 template",
+        body: "Three functions, one per shape. Look at where the length is recorded: after the `while` for longest (the window is valid there), inside the `while` for shortest (record, then shrink).\n\nMental test for `shortest_window([2, 3, 1, 2, 4, 3], 7)`: records 4, 4, 3, 3, 2 and returns 2. Correct.",
+        visual: { kind: "code", lang: "python", code: DAY3_TEMPLATE },
+      },
+      {
+        kind: "code",
+        title: "Now type it yourself: longest window",
+        prompt: "Write `longest_window(s)` from memory: the length of the longest substring with no repeated character (LC 3). Add right, shrink while invalid, record.",
+        starter: L("from collections import defaultdict", "", "def longest_window(s):", "    # add right; while invalid, remove left; record", "    pass"),
+        solution: LONGEST,
+        tests: [
+          { call: "longest_window(\"abcabcbb\")", expect: "3" },
+          { call: "longest_window(\"abcbd\")", expect: "3" },
+          { call: "longest_window(\"bbbbb\")", expect: "1", label: "all equal" },
+          { call: "longest_window(\"pwwkew\")", expect: "3" },
+          { call: "longest_window(\"\")", expect: "0", label: "empty" },
+        ],
+        fromMemory: true,
+        teach: "Keep a count per character. For each right: count it; while that character's count is above 1, decrease the count at left and move left; then best = max(best, right − left + 1).",
+        explain: "Only the character just added can be repeated, so the `while` checks `count[ch] > 1`.",
+      },
+      {
+        kind: "code",
+        title: "Shortest window",
+        prompt: "Write `shortest_window(nums, target)`: the length of the shortest subarray with sum ≥ target (all values positive), or 0 if none.",
+        starter: L("def shortest_window(nums, target):", "    pass"),
+        solution: SHORTEST,
+        tests: [
+          { call: "shortest_window([2, 3, 1, 2, 4, 3], 7)", expect: "2" },
+          { call: "shortest_window([1, 4, 4], 4)", expect: "1" },
+          { call: "shortest_window([1, 1, 1, 1], 11)", expect: "0", label: "never reaches target" },
+          { call: "shortest_window([], 3)", expect: "0", label: "empty" },
+          { call: "shortest_window([5, 5, 5], 15)", expect: "3", label: "whole array" },
+        ],
+        teach: "Add nums[right] to the sum. While the sum is at least target: record the length, subtract nums[left], move left.",
+        explain: "Start `best` at n + 1 so you can tell \"never valid\" apart and return 0.",
+      },
+      {
+        kind: "code",
+        title: "Count with at most k",
+        prompt: "Write `count_at_most(nums, k)`: the number of subarrays with at most k distinct values. Return 0 when k < 0, so exactly(k) = `count_at_most(nums, k) - count_at_most(nums, k - 1)` works.",
+        starter: L("from collections import defaultdict", "", "def count_at_most(nums, k):", "    pass"),
+        solution: AT_MOST,
+        tests: [
+          { call: "count_at_most([1, 2, 1, 3], 2)", expect: "8" },
+          { call: "count_at_most([1, 2, 1, 2, 3], 2) - count_at_most([1, 2, 1, 2, 3], 1)", expect: "7", label: "exactly 2 (LC 992)" },
+          { call: "count_at_most([5, 5, 5], 1)", expect: "6", label: "all equal" },
+          { call: "count_at_most([], 1)", expect: "0", label: "empty" },
+          { call: "count_at_most([1, 2], -1)", expect: "0", label: "k < 0" },
+        ],
+        teach: "Track counts and the number of distinct values. Shrink while distinct > k. Then every subarray ending at right with start in [left, right] is valid: add right − left + 1.",
+        explain: "The `k < 0` guard makes atMost(k − 1) safe when k = 0.",
+      },
+      {
+        kind: "read",
+        title: "Letter windows: use a list",
+        body: "For windows over lowercase letters, a plain list of 26 counts beats a dictionary.",
+        callout: { type: "trap", text: "For lowercase-letter windows, a `[0] * 26` list indexed by `ord(c) - 97` is faster than a `dict`, and comparing two 26-lists with `==` is O(26). Good for LC 567-style fixed windows." },
+      },
+      {
+        kind: "summary",
+        points: [
+          "A window [left, right] only moves forward: right every step, left only when the rule breaks. O(n).",
+          "It needs a monotone rule. Negative values break sum windows: use prefix sums + hash map (Day 4).",
+          "Longest: shrink while invalid, then record. Shortest: while valid, record, then shrink.",
+          "At most k: add right − left + 1. Exactly k = atMost(k) − atMost(k − 1).",
+          "Fixed length k: add one, drop one.",
+        ],
+      },
+    ],
+  },
+
+  /* ================================================================ */
+  /* Day 3 B: drill                                                   */
+  /* ================================================================ */
+  {
+    id: "ch04-l8",
+    day: 3,
+    title: "Day 3 drill: Sliding window",
+    goal: "Pick the right window shape, or see that a window fails, for five disguised problems, then work today's list.",
+    minutes: 10,
+    steps: [
+      {
+        kind: "read",
+        title: "Recap",
+        body: "Today's window shapes:\n- **Longest valid:** shrink while invalid, then record.\n- **Shortest valid:** while valid, record, then shrink.\n- **At most k:** add right − left + 1. **Exactly k** = atMost(k) − atMost(k − 1).\n- **Fixed k:** add one, drop one.\n- **Negatives** in a sum → not a window.",
+        visual: {
+          kind: "stats",
+          items: [
+            { value: "O(n)", label: "each index enters once, leaves once" },
+            { value: "monotone", label: "the rule a window needs" },
+            { value: "r − l + 1", label: "subarrays ending at right" },
+          ],
+        },
+      },
+      {
+        kind: "quiz",
+        teach: "\"Longest stretch\" with an \"at most k\" rule is the longest valid window: grow right, shrink left while the rule breaks.",
+        prompt: "Longest stretch of days in which you visited at most 2 distinct cities.",
+        options: ["Longest window, at most k distinct", "Shortest window, shrink while valid", "Fixed window of size k", "Two pointers from both ends"],
+        answer: 0,
+        explain: "Signal: \"longest stretch\" + \"at most 2 distinct\". Longest valid window with a count map.",
+      },
+      {
+        kind: "quiz",
+        teach: "\"Shortest\" with a sum that must reach a target, on positive values, is the shortest valid window: while valid, record and shrink.",
+        prompt: "Shortest stretch of consecutive positive weights whose total reaches W.",
+        options: ["Longest window, at most k distinct", "Shortest window, shrink while valid", "atMost(k) − atMost(k − 1)", "Not a window: prefix sum + hash map"],
+        answer: 1,
+        explain: "Signal: \"shortest\" + \"consecutive\" + \"positive\" + total reaches W. Shrink while valid.",
+      },
+      {
+        kind: "read",
+        title: "Notice the signal",
+        body: "Both stories said \"stretch\" (a run of neighbours, so a subarray). Then the word **longest** or **shortest** picks the shape. In the second one, \"positive\" is what makes the window legal.",
+      },
+      {
+        kind: "quiz",
+        teach: "When the window length is fixed, slide it by adding one element on the right and dropping one on the left. For letters, compare 26-count lists.",
+        prompt: "Does any block of s with length |p| use exactly the same letters as p?",
+        options: ["Longest window, at most k distinct", "Fixed window of size |p| with 26-counts", "Hash map keyed by sorted letters", "Two pointers from both ends"],
+        answer: 1,
+        explain: "Signal: \"block of length |p|\" = fixed length. Slide a window of size |p| and compare 26-counts.",
+      },
+      {
+        kind: "quiz",
+        teach: "\"Exactly k\" is hard to window directly. Count windows with at most k and subtract those with at most k − 1.",
+        prompt: "Count subarrays that contain exactly k odd numbers.",
+        options: ["Shortest window, shrink while valid", "atMost(k) − atMost(k − 1)", "Fixed window of size k", "Hash set, return on first hit"],
+        answer: 1,
+        explain: "Signal: \"count subarrays\" + \"exactly k\". Count at most k odds, subtract at most k − 1.",
+      },
+      {
+        kind: "read",
+        title: "Notice the signal",
+        body: "\"Exactly\" is the word that turns a window into two windows. The last one hides a trap in the first sentence: always check whether values can be negative before you reach for a window.",
+      },
+      {
+        kind: "quiz",
+        teach: "A sum window needs a monotone rule. With negative values, growing the window can lower the sum, so the window gives wrong answers.",
+        prompt: "Values may be negative. Find the longest subarray whose sum is exactly k.",
+        options: ["Longest window, at most k distinct", "Shortest window, shrink while valid", "Not a window: prefix sum + first-index map (Day 4)", "Fixed window of size k"],
+        answer: 2,
+        explain: "Signal: \"may be negative\". The rule is not monotone, so it is **not** a window. Day 4 solves it with a prefix sum and a map of first indexes.",
+      },
+      {
+        kind: "widget",
+        widget: "sliding-window",
+        title: "Fixed-window warm-up",
+        task: "Warm-up for LC 643: slide a window of size k = 4 over [1, 12, -5, -6, 50, 3]. Each step adds one and drops one. Which window has the largest sum?",
+        props: { mode: "fixed", nums: [1, 12, -5, -6, 50, 3], k: 4 },
+      },
+      {
+        kind: "read",
+        title: "Two notes for today's list",
+        body: "**LC 424:** the window is valid while `length − max_count ≤ k`: the letters that are not the most common one are the ones you would replace.\n\n**LC 76 (optional):** shortest window that covers all needed letter counts. Track how many letters are fully satisfied, so the validity check is O(1).",
+        callout: { type: "mistake", text: "In LC 424, recomputing `max(count.values())` every step is fine (26 letters), but people then try to decrease the stored max when shrinking. You do not need to: the answer only grows when the max grows." },
+      },
+      {
+        kind: "practice",
+        title: "Day 3 problems (in order)",
+        intro: "Set a timer for each box, no AI, no hints. S4 is optional; if you skip it, or the clock runs out before the stretch rows, move them to the Day 7 re-solve list. Never extend a box.",
+        problems: [
+          { ref: "LC 643 Maximum Average Subarray I", tier: "warm", lvl: "E", box: 10, clue: "Fixed length k → add one, drop one" },
+          { ref: "LC 3 Longest Substring Without Repeating Characters", tier: "core", lvl: "M", box: 20, clue: "Longest + \"no repeats\" → longest valid window" },
+          { ref: "LC 209 Minimum Size Subarray Sum", tier: "core", lvl: "M", box: 20, clue: "Shortest + positives → shrink while valid" },
+          { ref: "LC 424 Longest Repeating Character Replacement", tier: "core", lvl: "M", box: 25, clue: "Valid while `length − max_count ≤ k`" },
+          { ref: "LC 992 Subarrays with K Different Integers", tier: "stretch", lvl: "H", box: 35, clue: "\"Exactly k\" → atMost(k) − atMost(k − 1)" },
+          { ref: "CSES — Playlist", tier: "stretch", lvl: "CSES", box: 20, clue: "Longest run of distinct songs; values up to 10^9 → dict of last positions" },
+          { ref: "Codeforces problemset, rating 1000–1200, tag two pointers, solve 1–2", tier: "stretch", lvl: "1000–1200", box: 30, clue: "Before coding, state the monotone rule that lets `left` only move forward" },
+          { ref: "LC 76 Minimum Window Substring", tier: "stretch", lvl: "H", box: 40, clue: "Shortest window covering all needed counts; track how many letters are satisfied" },
+        ],
+      },
+      {
+        kind: "reveal",
+        prompt: "End-of-day check 1: why is the window O(n) when there is a `while` loop inside the `for` loop?",
+        answer: "`left` and `right` only move forward. Each index enters the window once (when `right` reaches it) and leaves once (when `left` passes it). So all the `while` iterations together are at most n: about 2n moves in total.",
+      },
+      {
+        kind: "reveal",
+        prompt: "End-of-day check 2: why does a sliding window fail when values can be negative? Give a 3-number example.",
+        answer: "With negatives, growing a window can lower its sum, so the rule is not monotone and a shrink decision can throw away the answer. Example: [5, −10, 6], shortest subarray with sum ≥ 6. The window's sum goes 5, −5, 1 and never reaches 6, so it reports none, but [6] alone works.",
+      },
+      {
+        kind: "reveal",
+        prompt: "End-of-day check 3: in \"count subarrays with at most k\", why do you add `right − left + 1`?",
+        answer: "After shrinking, [left, right] is valid. Any subarray that ends at `right` and starts anywhere from `left` to `right` sits inside it, so it is valid too. There are right − left + 1 such starts, and each subarray is counted once, at its own end.",
+      },
+      {
+        kind: "summary",
+        points: [
+          "\"Subarray/substring\" + longest/shortest/at most → window. \"Exactly k\" → two at-most windows.",
+          "Fixed length → add one, drop one. Letters → `[0] * 26` counts.",
+          "Values may be negative → not a window; that is Day 4's prefix sums.",
+          "S4 (LC 76) is optional; skipped rows go to the Day 7 re-solve list.",
+          B_END,
+        ],
+      },
+    ],
+  },
 ];
+
 export default lessons;

@@ -96,7 +96,9 @@ Page change: fade plus 12px rise on the smooth spring. Nothing loops for decorat
 
 Existing contract (unchanged props): `Button`, `Slider`, `Segmented`, `Toggle`, `Stat`, `StatGrid`, `Stage`, `WidgetFrame`, `Chip`, `Callout`, `Log`, `LineChart`.
 
-Added: `Button` variants `good`, `tinted`, `plain` and a `block` prop · `IconButton` · `Icon` (24px grid, 1.75 stroke, `currentColor`) · `Card` (flat, `raised`, link via `href`) · `ProgressBar` · `Ring` · `Eyebrow` · `Kbd` · `Sheet` (dialog on desktop, bottom sheet on phones, focus trapped) · `springs`.
+Added: `Button` variants `good`, `tinted`, `plain` and a `block` prop · `IconButton` · `Icon` (24px grid, 1.75 stroke, `currentColor`) · `Card` (flat, `raised`, link via `href`) · `ProgressBar` · `Ring` · `Eyebrow` · `Kbd` · `Sheet` (dialog on desktop, bottom sheet on phones, focus trapped; first focus goes to a `data-autofocus` element, so mark Cancel in destructive dialogs) · `springs`.
+
+Form fields (plain CSS classes in `ui.css`): `.ui-field` (label wrapper: a `<span>` label, the control, an optional `<small>` hint), `.ui-input`, `.ui-select`, `.ui-textarea` (44px tall, 16px text so phones do not zoom, 1px inset line, 2px accent on focus), `.ui-check` (22px accent checkbox). `LineChart` series take an opt-in `dots` flag (use it when a series may have one point).
 
 - **Buttons:** 52px (l) for the lesson action, 40px (m) default, 32px (s) in dense controls. One primary per screen. Disabled is flat `--surface-3` with `--muted` text: "can I press this?" is visible before reading.
 - **Segmented:** 32px track in `--surface-3`, white thumb (#636366 in dark).
@@ -117,7 +119,20 @@ Added: `Button` variants `good`, `tinted`, `plain` and a `block` prop · `IconBu
 
 ---
 
-## 9. Ten rules
+## 9. The plan pages
+
+The 30-day plan has its own surfaces. Helpers live in `src/pages/plan.ts` (day topics, lessons and problems per day, day status, the re-solve queue, problem links).
+
+- **Brand:** "CP 30", tagline "Competitive programming in Python, in 30 days". Logo = a three-quarter accent ring (the month) around a code chevron, on an ink tile.
+- **Navigation:** desktop top bar has 7 links (Home, Today, Course, Gym, Tracker, Labs, Glossary). The phone tab bar has 5: Home, Today, Course, Gym, More. More opens a sheet with Tracker, Labs, Glossary and the theme switch; it shows the active page's name when one of those is open. Icons: home, calendar, route, timer, chart, flask, book.
+- **Routes:** `#today` opens today's plan day; `#today-N` opens Day N (the day picker rewrites the address with `replaceState`). `#tracker-<tab>` opens a tracker tab (`log`, `mistakes`, `resolve`, `settings`).
+- **Home hero = Today.** Day number tile, the topic as the title, lesson A and lesson B rows with done states, problems "x of y" and the gym warm-up status, one primary button (the next lesson of the day). With no Day 1 set, the hero asks "When is your Day 1?". Side column: streak card and a compact continue card (secondary, never a second primary).
+- **Plan grid:** 31 cells in week rows (Start, Week 1-4, Finish). States: done = `--good-soft` fill with a check; today = 2px accent ring; not finished = a hollow `--warn` dot; ahead = `--surface-2`. Under 560px container width only the number and the state mark show.
+- **Today page:** day picker (chevrons, clamped 0..30), lessons, the 3-hour block as a timeline (past phases get a check, the current phase is tinted with "Now" and a progress bar), the day's problems through the player's `PracticeList`, and a side column: warm-up, re-solves due, hours, end-of-day reminder.
+- **Gym runner:** one card per screen. The 15-second countdown is a ring that turns `--warn` in the last 5 seconds; it stops when the answer shows. "Say it" = Space reveals, 1/2 grade. "Pick it" = four 56px answer tiles (keys 1-4), auto-graded, Enter for the next card. The answer is a gray panel: Pattern, Target (mono), Trigger. Each new card starts at the top of the page.
+- **Tables (Tracker):** inside a rounded scroll container with a sticky first column, so the page itself never scrolls sideways. Editable cells are 36px `--surface-2` wells; the current plan day's column or row gets a 6% accent tint. Numbers the site already knows show as placeholders, with a "Fill" button to copy them in.
+
+## 10. Ten rules
 
 1. **Do** keep one primary action per screen, in a fixed place.
 2. **Do** keep neutrals neutral. **Don't** tint grays or fill surfaces with part colors.

@@ -1,5 +1,196 @@
 import type { GlossaryEntry } from "./types";
-// Placeholder. The chapter 0 agent writes the competitive-programming glossary here.
+/**
+ * Competitive-programming and Python glossary. Link with [[term]] or [[shown text|term]].
+ * Lookup is case-insensitive and also matches simple plurals, "a / b" halves,
+ * and acronyms in parentheses, e.g. [[DSU]] finds "union-find / DSU".
+ */
 export const GLOSSARY: GlossaryEntry[] = [
+  /* ---------- Complexity and constraints ---------- */
   { term: "time complexity", def: "How the number of steps grows as the input size n grows, written with big O, for example O(n log n)." },
+  { term: "space complexity", def: "How the memory your solution uses grows as the input size n grows, written with big O." },
+  { term: "big O", def: "A way to describe growth that keeps only the biggest term and drops constants. O(3n^2 + 5n) is just O(n^2)." },
+  { term: "constraints", def: "The limits in a problem statement, such as n ≤ 2·10^5 or values ≤ 10^9. They tell you how fast your solution must be." },
+  { term: "operation budget", def: "How many simple steps fit in the time limit: about 10^7 per second in CPython and about 10^8 in PyPy. Compare it with your complexity at the largest n." },
+  { term: "amortized", def: "An average cost per operation over a whole run. One step may be slow, but the total stays small, like each element entering and leaving a stack once." },
+  { term: "brute force", def: "The simplest correct solution that tries every option. It is often too slow, but it shows where the wasted work is and is useful for testing." },
+
+  /* ---------- Python for contests ---------- */
+  { term: "CPython", def: "The standard Python interpreter. LeetCode runs it. It does about 10^7 simple operations per second." },
+  { term: "PyPy", def: "A faster Python interpreter with a just-in-time compiler, often 5 to 10 times faster on loops. Codeforces, AtCoder and CSES let you choose it." },
+  { term: "fast I/O", def: "Reading all input at once with sys.stdin.buffer.read().split() and printing one joined string at the end. Calling input() and print() per line can cause TLE." },
+  { term: "contest template", def: "The short starter file you paste into every Codeforces, AtCoder or CSES solution: fast input, a main() function and one write at the end." },
+  { term: "recursion limit", def: "Python stops recursion at about 1000 nested calls by default. Deep recursion on big inputs needs sys.setrecursionlimit or, better, an iterative version." },
+  { term: "heapq", def: "Python's heap module. It keeps a plain list as a min-heap: heappush and heappop are O(log n). Push negative values to get a max-heap." },
+  { term: "bisect", def: "Python's binary search module for sorted lists. bisect_left finds the first index with a[i] ≥ x; bisect_right finds the first index with a[i] > x." },
+  { term: "deque", def: "A double-ended queue from collections. Adding or removing at either end is O(1), so use it for BFS queues and sliding windows instead of list.pop(0)." },
+  { term: "functools.cache", def: "A decorator that remembers a function's results by its arguments. It is the quickest way to memoize a recursive DP in Python." },
+  { term: "SortedList", def: "A sorted list from the sortedcontainers package with O(log n) add, remove and index lookups. LeetCode has it; on other judges you may need your own structure." },
+  { term: "stress testing", def: "Checking a fast solution by running it against a simple brute force on many small random inputs until the outputs differ. The failing input shows the bug." },
+  { term: "iterative DFS", def: "Depth-first search with your own explicit stack instead of recursion. It avoids Python's recursion limit on large trees and graphs." },
+
+  /* ---------- Judges and verdicts ---------- */
+  { term: "WA (Wrong Answer)", def: "The verdict that your program printed a wrong result on some test. The idea or the details are wrong." },
+  { term: "TLE (Time Limit Exceeded)", def: "The verdict that your program ran longer than the time limit. Usually the complexity is too high, or Python overhead is too big." },
+  { term: "MLE (Memory Limit Exceeded)", def: "The verdict that your program used more memory than allowed, often from a huge table or deep recursion." },
+  { term: "edge case", def: "An unusual input that breaks careless code: an empty array, one element, all values equal, negative numbers, or the largest n." },
+  { term: "off-by-one", def: "A bug where an index or count is wrong by exactly one, such as using < instead of ≤, or last[c] instead of last[c] + 1." },
+  { term: "multiple test cases", def: "Inputs that start with t, the number of separate tests. Reset your state for each one, and use the 'sum of n' limit to judge speed." },
+
+  /* ---------- Platforms and contests ---------- */
+  { term: "LeetCode", def: "A site of interview-style problems with weekly contests. Python runs as CPython there, and you write a function instead of reading input." },
+  { term: "Codeforces", def: "The largest competitive programming site, with rated rounds in several divisions. Pick PyPy 3 64-bit when you submit." },
+  { term: "AtCoder", def: "A Japanese contest site. Its weekly ABC rounds are clean and well sorted by difficulty." },
+  { term: "CSES", def: "The CSES Problem Set, a classic list of about 300 standard problems grouped by topic, such as Sorting and Searching or Dynamic Programming." },
+  { term: "ABC (AtCoder Beginner Contest)", def: "AtCoder's weekly 100-minute contest of about 7 problems sorted from easiest. A beginner's target is A to D." },
+  { term: "Div 2", def: "A Codeforces round for contestants rated below 2100. Problem A is easy, and the later ones get hard quickly." },
+  { term: "Div 3", def: "A Codeforces round for ratings below 1600, with about 7 problems sorted from easiest. A good first target." },
+  { term: "Div 4", def: "The easiest Codeforces round, for ratings below 1400. Most problems test implementation and simple ideas." },
+  { term: "rating", def: "A number that estimates your contest strength. It moves after each rated round and is noisy for new accounts." },
+  { term: "performance", def: "The rating you played at in one contest. It shows your level before your slow-moving rating catches up." },
+  { term: "Codeforces rank", def: "The title that matches a Codeforces rating: Pupil from 1200, Specialist from 1400, Expert from 1600, Candidate Master from 1900, Master from 2100 and Grandmaster from 2400." },
+  { term: "Knight (LeetCode)", def: "A LeetCode contest badge for roughly the top 25% of rated contestants, about rating 1850. Guardian is the higher badge, about 2100 or more." },
+  { term: "penalty", def: "Extra time added for each wrong submission on a problem you later solve, for example 5 minutes on LeetCode." },
+  { term: "hack", def: "On Codeforces, finding an input that breaks someone else's accepted code during the open hacking phase. It is why fixed hash seeds are risky." },
+  { term: "virtual contest", def: "Taking a past contest under real timing, as if it were live. It is unrated, but it is the best practice for contest pressure." },
+  { term: "editorial", def: "The official explanation of a contest's solutions. Read it after you are stuck, then close it and write the code yourself." },
+  { term: "upsolve", def: "Solving, after a contest, the problems you could not solve during it. It is where most of a contest's learning happens." },
+
+  /* ---------- Practice habits ---------- */
+  { term: "time box", def: "A fixed time you allow for a problem before you change what you are doing: 15 minutes for Easy, 30 for Medium, 45 for Hard." },
+  { term: "stuck protocol", def: "What to do when a time box ends: write the brute force, take one hint, read the editorial and write the code from scratch, then queue a re-solve." },
+  { term: "AI detox", def: "The rule of no AI while solving. AI may only explain an editorial or review your code after the problem is closed, and never in contests." },
+  { term: "re-solve queue", def: "The list of problems you needed help on. Each one is solved again from a blank file on Day +3 and Day +7." },
+  { term: "spaced repetition", def: "Reviewing something at growing gaps, such as after 3 days and then 7 days. Each review makes the memory last longer." },
+  { term: "retrieval practice", def: "Learning by pulling the answer out of your own memory instead of re-reading it. It builds recall much faster." },
+  { term: "interleaving", def: "Mixing different topics in one practice session instead of doing one topic in a row. It trains you to tell patterns apart." },
+  { term: "mistake journal", def: "A log with one line per Wrong Answer, TLE or looked-up solution: the problem, what went wrong, its category, and a rule for next time." },
+  { term: "recognition card", def: "A one-line problem, in your own words, on the front, and the pattern plus complexity on the back. You answer it in 15 seconds." },
+  { term: "15-second scan", def: "Four quick checks on a new problem: n and values give the budget, what it wants back, the input shape, and one trigger phrase." },
+  { term: "trigger signal", def: "A phrase in a problem that points to a pattern, such as 'minimize the maximum' pointing to binary search on the answer." },
+
+  /* ---------- Thinking moves ---------- */
+  { term: "invariant", def: "Something that never changes while a process runs, like the parity of a sum. It often proves that a target is impossible." },
+  { term: "monotonicity", def: "A quantity that only goes one way: it only grows, or only shrinks. It is what makes binary search and two pointers work." },
+  { term: "exchange argument", def: "A proof for greedy: take any best answer and swap in the greedy choice. If the result is no worse, greedy is optimal." },
+  { term: "counterexample", def: "A small input where an idea gives the wrong answer. Hunting for one is the fastest way to reject a wrong greedy." },
+  { term: "contribution technique", def: "For 'sum over all pairs or subarrays', count how much each single element adds to the total, instead of listing every pair." },
+  { term: "complement counting", def: "Counting what you do not want and subtracting it from the total, for example total minus 'none' to get 'at least one'." },
+  { term: "think in reverse", def: "Solving a problem backwards, for example adding edges back instead of deleting them, or working from the end state." },
+  { term: "fix one variable", def: "Loop over one element, often the middle one, and search the rest fast. It turns O(n^3) pair or triple searches into O(n^2) or better." },
+  { term: "precomputation", def: "Building a table once, such as prefix sums or a sieve, so that many later queries are answered fast." },
+  { term: "meet in the middle", def: "Split the input into two halves, list all options for each half, then combine them. It turns 2^40 into about 2·2^20." },
+  { term: "feasibility check", def: "A yes/no function that tests whether a candidate answer works. Binary search on the answer calls it O(log range) times." },
+  { term: "canonical key", def: "One standard form that equal-looking items share, like the sorted letters of a word for grouping anagrams." },
+
+  /* ---------- Sequence words ---------- */
+  { term: "subarray", def: "A contiguous part of an array, with no gaps." },
+  { term: "substring", def: "A contiguous part of a string, with no gaps." },
+  { term: "subsequence", def: "Elements taken in their original order, but gaps are allowed." },
+  { term: "subset", def: "Any choice of elements, ignoring order. A set of n elements has 2^n subsets." },
+  { term: "permutation", def: "An ordering of all the elements. n elements have n! permutations." },
+
+  /* ---------- Data structures ---------- */
+  { term: "hash map", def: "A key-to-value table with O(1) average lookup. In Python it is a dict." },
+  { term: "stack", def: "A last-in, first-out list: you push and pop at the same end. A Python list with append and pop works." },
+  { term: "heap / priority queue", def: "A structure that always gives the smallest item (a min-heap) or the largest (a max-heap) in O(log n) per push or pop. Python's heapq is a min-heap; push negated values for a max-heap." },
+  { term: "monotonic stack", def: "A stack kept in increasing or decreasing order by popping items that break the order. It finds the next greater or smaller element in O(n)." },
+  { term: "monotonic deque", def: "A deque of indexes kept in order, so its front is always the window's max or min. It solves sliding window maximum in O(n)." },
+  { term: "BST (binary search tree)", def: "A binary tree where every left subtree holds smaller values and every right subtree holds larger values." },
+  { term: "adjacency list", def: "A graph stored as a list per node of the nodes it connects to: adj[u] = [v1, v2, ...]." },
+  { term: "DAG (directed acyclic graph)", def: "A directed graph with no cycles. It always has a topological order, so DP along it works." },
+  { term: "connected component", def: "A group of nodes that can all reach each other, with no edge to the rest of the graph." },
+  { term: "union-find / DSU", def: "The disjoint set union structure. It merges groups and answers 'same group?' in almost O(1), using path compression and union by size." },
+  { term: "path compression", def: "A DSU trick: while finding a root, point every node on the path straight at the root, so later finds are fast." },
+  { term: "union by size", def: "A DSU trick: attach the smaller group under the larger one, so trees stay shallow." },
+  { term: "Fenwick tree (BIT)", def: "A binary indexed tree: an array that supports point updates and prefix sums, both in O(log n). Short to write." },
+  { term: "segment tree", def: "A tree over array ranges that answers range queries (sum, min, max, gcd) and point updates in O(log n)." },
+  { term: "bitmask", def: "An integer whose bits mark which items of a small set are chosen. With n ≤ 20 there are 2^n masks." },
+
+  /* ---------- Arrays and searching ---------- */
+  { term: "two pointers", def: "Two indexes moving through an array, from both ends inward or in the same direction, to avoid checking every pair. Often needs sorted input." },
+  { term: "sliding window", def: "A contiguous range [L, R] that grows on the right and shrinks on the left while it stays valid. Most window problems become O(n)." },
+  { term: "prefix sum", def: "pre[i] is the sum of the first i elements, so the sum of a[l..r] is pre[r + 1] − pre[l] in O(1)." },
+  { term: "2-D prefix sum", def: "A prefix-sum table over a grid. Any rectangle's sum comes from four table cells by inclusion-exclusion." },
+  { term: "difference array", def: "Store changes instead of values: add v at l and subtract v at r + 1. One prefix sum at the end applies every range update." },
+  { term: "prefix XOR", def: "px[i] is the XOR of the first i elements, so the XOR of a[l..r] is px[r + 1] ^ px[l]." },
+  { term: "binary search", def: "Finding a target or boundary in a sorted or monotonic range by halving it each step. O(log n)." },
+  { term: "binary search on the answer", def: "Binary search over possible answers with a yes/no feasibility check. Works when the check flips only once, for 'minimize the maximum' and similar." },
+  { term: "coordinate compression", def: "Replacing large values with their rank among the sorted unique values, so they fit as array indexes." },
+  { term: "sweep line", def: "Sort events, such as interval starts and ends, by position, then process them in order while tracking the current state." },
+  { term: "offline queries", def: "Reading all queries first and answering them in a convenient order, for example sorted, instead of one at a time." },
+
+  /* ---------- Greedy, heaps, recursion ---------- */
+  { term: "greedy", def: "Building the answer by always taking the best-looking choice now. It needs a proof, such as an exchange argument, or a counterexample hunt." },
+  { term: "top-k", def: "Keeping the k largest items with a min-heap of size k: push each item and pop when the heap grows past k. O(n log k)." },
+  { term: "two heaps", def: "A max-heap for the smaller half and a min-heap for the larger half, kept balanced, to get a running median." },
+  { term: "lazy deletion", def: "Leaving outdated entries in a heap and skipping them when they are popped, instead of removing them right away." },
+  { term: "base case", def: "The smallest input a recursion or DP answers directly, without calling itself." },
+  { term: "backtracking", def: "Trying choices one at a time, recursing, then undoing the choice to try the next one. Fits n ≤ 20 or so." },
+  { term: "pruning", def: "Stopping a search branch early when it cannot lead to a valid or better answer." },
+
+  /* ---------- Trees and graphs ---------- */
+  { term: "DFS (depth-first search)", def: "Going as deep as possible along one path before backing up. Used for trees, connected components and cycle checks." },
+  { term: "BFS (breadth-first search)", def: "Visiting nodes level by level with a queue. In an unweighted graph it finds shortest paths." },
+  { term: "multi-source BFS", def: "BFS that starts with many nodes in the queue at distance 0, like rotting oranges spreading at the same time." },
+  { term: "0-1 BFS", def: "Shortest paths when every edge costs 0 or 1: use a deque and push cost-0 moves to the front, cost-1 moves to the back. O(V + E)." },
+  { term: "flood fill", def: "Marking every cell reachable from a start cell, with DFS or BFS. Used to count islands." },
+  { term: "post-order", def: "A tree visit order: children first, then the node. Use it when a node needs its children's answers." },
+  { term: "topological sort", def: "An order of a DAG's nodes where every edge u → v puts u before v. Used for dependencies and prerequisites." },
+  { term: "Kahn's algorithm", def: "Topological sort with in-degrees: start from nodes with in-degree 0 and remove them one by one. If some nodes are never removed, there is a cycle." },
+  { term: "Dijkstra", def: "Dijkstra's algorithm: shortest paths with non-negative edge weights, popping the closest node from a heap. O((V + E) log V)." },
+  { term: "relaxation", def: "Updating a node's best distance when a path through a neighbor is shorter: if d[u] + w < d[v], set d[v] = d[u] + w." },
+  { term: "Bellman-Ford", def: "A shortest-path algorithm that relaxes every edge in rounds. It handles negative edges, and k + 1 rounds give paths with at most k stops." },
+  { term: "MST (minimum spanning tree)", def: "The cheapest set of edges that connects every node of a weighted graph without a cycle." },
+  { term: "Kruskal", def: "Kruskal's algorithm builds an MST by sorting edges by weight and adding each one that joins two different DSU groups." },
+  { term: "rerooting", def: "A tree DP that computes an answer for every node as the root with one pass down and one pass up, instead of n separate passes." },
+
+  /* ---------- Dynamic programming ---------- */
+  { term: "dynamic programming (DP)", def: "Solving a problem by combining answers to smaller subproblems that repeat, storing each answer so it is computed once." },
+  { term: "state", def: "What a DP entry means, in words, such as 'dp[i] = best total using the first i items'. Choosing the state is most of the work." },
+  { term: "transition", def: "The rule that computes a DP state from smaller states, usually by trying the last choice in every way." },
+  { term: "overlapping subproblems", def: "When a brute-force recursion solves the same smaller problem many times. It is the sign that DP will help." },
+  { term: "memoization", def: "Top-down DP: write the recursion, then cache each result by its arguments so each state is computed once." },
+  { term: "tabulation", def: "Bottom-up DP: fill a table in an order where every value you need is already computed. No recursion depth limits." },
+  { term: "grid DP", def: "DP over the cells of a grid, where each cell depends on its neighbors above and to the left, such as counting paths." },
+  { term: "LCS (longest common subsequence)", def: "The longest subsequence that two strings share, found with a 2-D DP over prefixes of both strings in O(n·m)." },
+  { term: "edit distance", def: "The fewest inserts, deletes and replaces that turn one string into another, found with a 2-D DP over prefixes." },
+  { term: "knapsack", def: "Choosing items with weights and values to get the best total under a capacity. The family includes 0/1, unbounded and counting versions." },
+  { term: "0/1 knapsack", def: "Knapsack where each item is used at most once. With a 1-D table, loop the capacity downwards." },
+  { term: "unbounded knapsack", def: "Knapsack where each item can be used any number of times, like coin change. With a 1-D table, loop the capacity upwards." },
+  { term: "LIS (longest increasing subsequence)", def: "The longest strictly increasing subsequence. A tails array with bisect finds its length in O(n log n)." },
+  { term: "interval DP", def: "DP over ranges [i, j], built from shorter ranges, often by trying every split point. Usually O(n^3)." },
+  { term: "bitmask DP", def: "DP whose state includes a bitmask of which items are used. Fits n ≤ 20, with about 2^n · n states." },
+  { term: "digit DP", def: "Counting numbers up to N with some digit property, going digit by digit with a 'tight' flag. Answer for [a, b] = f(b) − f(a − 1)." },
+  { term: "tree DP", def: "DP where each node's answer is built from its children's answers in post-order." },
+  { term: "DAG DP", def: "DP over a directed acyclic graph in topological order, for example counting paths or finding the longest path." },
+  { term: "state-machine DP", def: "DP with a small extra state such as 'holding a stock' or 'in cooldown', with fixed moves between the states." },
+
+  /* ---------- Math ---------- */
+  { term: "modular arithmetic", def: "Doing all math modulo a number, often 10^9+7 or 998244353, to keep answers small. Reduce after every multiplication." },
+  { term: "fast power", def: "Computing a^b mod m in O(log b) by squaring and multiplying along the bits of b. In Python it is pow(a, b, m)." },
+  { term: "modular inverse", def: "The number x with a·x ≡ 1 mod p. It turns division into multiplication under a modulus. For a prime p, x = pow(a, p − 2, p)." },
+  { term: "Fermat's little theorem", def: "For a prime p and a not divisible by p, a^(p−1) ≡ 1 mod p. It gives the modular inverse a^(p−2)." },
+  { term: "nCr", def: "The binomial coefficient: the number of ways to choose r items from n. Under a modulus, use factorial and inverse-factorial tables." },
+  { term: "sieve", def: "The sieve of Eratosthenes: mark multiples of each prime to find all primes up to N in about O(N log log N)." },
+  { term: "SPF (smallest prime factor)", def: "A sieve table storing each number's smallest prime factor, so any number up to N factors in O(log N)." },
+  { term: "trial division", def: "Factoring x by trying divisors up to √x. Fine for one number up to about 10^12." },
+  { term: "GCD (greatest common divisor)", def: "The largest number that divides both values. Euclid's algorithm finds it in O(log); Python has math.gcd." },
+  { term: "harmonic sum", def: "n/1 + n/2 + ... + n/n ≈ n ln n. It is why looping over all multiples of every number up to n is fast." },
+  { term: "inclusion-exclusion", def: "Counting a union by adding the sizes of the sets, subtracting the pairwise overlaps, adding back triple overlaps, and so on." },
+
+  /* ---------- Bits ---------- */
+  { term: "XOR", def: "Exclusive or (^): a bit is 1 when the two bits differ. x ^ x = 0 and x ^ 0 = x, so pairs cancel out." },
+  { term: "lowest set bit", def: "The rightmost 1 bit of x, found with x & -x. Fenwick trees use it to move between nodes." },
+  { term: "two's complement", def: "How computers store negative integers: -x equals the bits of x flipped, plus 1." },
+  { term: "per-bit counting", def: "Handling each bit position separately, for example counting how many numbers have bit k set, to sum XOR, AND or OR over pairs." },
+
+  /* ---------- Strings ---------- */
+  { term: "prefix function", def: "pi[i] is the length of the longest proper prefix of s[0..i] that is also a suffix of it. KMP is built on it." },
+  { term: "KMP", def: "The Knuth-Morris-Pratt algorithm: finds every match of a pattern in a text in O(n + m) using the prefix function." },
+  { term: "Z-function", def: "z[i] is the length of the longest common prefix of s and s[i:]. It finds pattern matches in O(n)." },
+  { term: "rolling hash", def: "A number computed from a string's characters that can slide or be cut in O(1), so substrings compare fast. Use a random base on Codeforces." },
+  { term: "anti-hash test", def: "An input built to make many keys collide in a hash table or a fixed string hash, causing TLE or wrong answers. Seen in Codeforces hacks." },
+
+  /* ---------- Contest problem types ---------- */
+  { term: "constructive problem", def: "A problem that asks you to build any valid answer, such as an array or a sequence of moves. Solve small cases by hand and look for a pattern." },
 ];

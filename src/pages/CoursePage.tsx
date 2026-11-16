@@ -11,8 +11,8 @@ export default function CoursePage() {
   const mins = COURSE.reduce((a, c) => a + minutesOf(c), 0);
   return (
     <div className="page course">
-      <PageHead eyebrow="CDN and media delivery" title="The course"
-        sub={`${plural(COURSE.length, "chapter")} in six parts${total ? `, ${plural(total, "lesson")}, about ${fmtMinutes(mins)}` : ""}. From one press of Play to designing delivery for two million viewers.`}>
+      <PageHead eyebrow="Competitive programming in Python" title="The course"
+        sub={`${plural(COURSE.length, "chapter")} in seven parts${total ? `, ${plural(total, "lesson")}, about ${fmtMinutes(mins)}` : ""}. From reading the constraints to naming the right algorithm in 15 seconds.`}>
         {total > 0 && <div className="course-prog"><span className="tnum">{done} of {total}</span> lessons done</div>}
       </PageHead>
       {PART_LIST.map((part) => {

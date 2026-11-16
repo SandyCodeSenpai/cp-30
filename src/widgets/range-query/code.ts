@@ -1,0 +1,72 @@
+/** Python templates from Day 25 (chapter 7), line for line. Usage lines are marked. */
+
+export const BIT_CODE = [
+  "class BIT:                                   # 1-indexed",
+  "    def __init__(self, n):",
+  "        self.n = n",
+  "        self.t = [0] * (n + 1)",
+  "    def add(self, i, delta):",
+  "        while i <= self.n:",
+  "            self.t[i] += delta",
+  "            i += i & -i",
+  "    def sum(self, i):                        # a[1] + ... + a[i]",
+  "        s = 0",
+  "        while i > 0:",
+  "            s += self.t[i]",
+  "            i -= i & -i",
+  "        return s",
+  "    def range_sum(self, l, r):",
+  "        return self.sum(r) - self.sum(l - 1)",
+  "",
+  "bit = BIT(len(a))                            # usage: build with n adds",
+  "for i, x in enumerate(a, 1):",
+  "    bit.add(i, x)",
+];
+export const BL = { cls: 0, init: 1, add: 4, addWhile: 5, addT: 6, addJump: 7, sum: 8, sumS0: 9, sumWhile: 10, sumS: 11, sumJump: 12, sumRet: 13, range: 14, rangeRet: 15, buildNew: 17, buildFor: 18, buildAdd: 19 } as const;
+
+export const SEG_CODE = [
+  "class SegTree:          # iterative; op must be associative and commutative (min, max, +, gcd)",
+  "    def __init__(self, data, op, identity):",
+  "        n = len(data)",
+  "        self.n, self.op, self.e = n, op, identity",
+  "        self.t = [identity] * n + list(data)",
+  "        for i in range(n - 1, 0, -1):",
+  "            self.t[i] = op(self.t[2 * i], self.t[2 * i + 1])",
+  "    def update(self, i, value):              # a[i] = value, 0-indexed",
+  "        i += self.n",
+  "        self.t[i] = value",
+  "        while i > 1:",
+  "            i >>= 1",
+  "            self.t[i] = self.op(self.t[2 * i], self.t[2 * i + 1])",
+  "    def query(self, l, r):                   # op over a[l:r], half-open",
+  "        res = self.e",
+  "        l += self.n",
+  "        r += self.n",
+  "        while l < r:",
+  "            if l & 1:",
+  "                res = self.op(res, self.t[l])",
+  "                l += 1",
+  "            if r & 1:",
+  "                r -= 1",
+  "                res = self.op(res, self.t[r])",
+  "            l >>= 1",
+  "            r >>= 1",
+  "        return res",
+  "",
+  "# st = SegTree(a, min, float(\"inf\"));  st = SegTree(a, lambda x, y: x + y, 0)",
+];
+export const SL = { cls: 0, init: 1, leaves: 4, buildFor: 5, buildT: 6, upd: 7, updShift: 8, updSet: 9, updWhile: 10, updUp: 11, updT: 12, q: 13, qRes: 14, qL: 15, qR: 16, qWhile: 17, qLodd: 18, qLtake: 19, qLinc: 20, qRodd: 21, qRdec: 22, qRtake: 23, qLup: 24, qRup: 25, qRet: 26 } as const;
+
+export const INV_CODE = [
+  "def count_inversions(a):                     # pairs i < j with a[i] > a[j]",
+  "    vals = sorted(set(a))",
+  "    rank = {v: i + 1 for i, v in enumerate(vals)}",
+  "    bit = BIT(len(vals))",
+  "    inv = 0",
+  "    for seen, x in enumerate(a):",
+  "        r = rank[x]",
+  "        inv += seen - bit.sum(r)             # earlier elements strictly greater",
+  "        bit.add(r, 1)",
+  "    return inv",
+];
+export const IL = { def: 0, vals: 1, rank: 2, bit: 3, inv0: 4, loop: 5, r: 6, inv: 7, add: 8, ret: 9 } as const;

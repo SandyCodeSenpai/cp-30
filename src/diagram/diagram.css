@@ -95,6 +95,9 @@
   transition: opacity var(--dg-t) var(--dg-ease), box-shadow var(--dg-t) var(--dg-ease), filter var(--dg-t) var(--dg-ease), transform 160ms var(--dg-ease);
 }
 .dg-flow.s-stack .dg-node { flex-direction: column; justify-content: center; text-align: center; gap: 8px; padding: 12px 6px; }
+.dg-flow.s-compact .dg-node { flex-direction: column; justify-content: center; text-align: center; gap: 0; padding: 10px 5px; border-radius: 12px; }
+.dg-flow.s-compact .dg-node-label { font-size: 13px; line-height: 17px; }
+.dg-flow.s-compact .dg-node-icon { display: none; }
 .dg-node.fam-client { --dg-tile: var(--dg-fam-client); }
 .dg-node.fam-delivery { --dg-tile: var(--dg-fam-delivery); }
 .dg-node.fam-origin { --dg-tile: var(--dg-fam-origin); }

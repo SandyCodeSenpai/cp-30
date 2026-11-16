@@ -8,12 +8,12 @@ import { WIDGET_LIST, type WidgetMeta } from "@/widgets/registry";
 import type { ProgressState } from "@/state/progress";
 
 const DEMO = typeof location !== "undefined" && /[?&]demo\b/.test(location.search);
-const DEMO_TITLES = ["The big picture", "Follow one request", "Where the time goes", "The numbers that matter", "A failure, step by step", "What a staff engineer asks"];
+const DEMO_TITLES = ["The big picture", "Read the constraints", "The template", "Trace it by hand", "A wrong answer, step by step", "Name it in 15 seconds"];
 
 function demoLessons(c: Chapter): Lesson[] {
   const k = c.n === 0 ? 2 : 4 + (c.n % 3);
   return Array.from({ length: k }, (_, i) => ({
-    id: `demo-ch${c.n}-l${i + 1}`, title: DEMO_TITLES[i % DEMO_TITLES.length], goal: "Explain this idea in one sentence in a design review.",
+    id: `demo-ch${c.n}-l${i + 1}`, title: DEMO_TITLES[i % DEMO_TITLES.length], goal: "Name this pattern from a problem statement in 15 seconds.",
     minutes: 6 + ((c.n + i) % 5), steps: [{ kind: "read", title: "Placeholder", body: "Placeholder step for layout checks." } as Step],
   }));
 }

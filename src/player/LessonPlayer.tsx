@@ -8,10 +8,18 @@
  *   An assisted answer earns no first-try XP and counts as not first try, but a right one is not "missed".
  * - Back (left chevron, the Left arrow key, or a visited progress segment): earlier steps show their final
  *   answered state, read-only. Continue walks forward again; the furthest step keeps its in-progress state.
+ *
+ * Code and practice:
+ * - Code steps (`kind: "code"`): real Python in the browser. The primary button reads "Run tests" until the
+ *   reader runs or skips, then Continue. Not scored for accuracy; all tests passing (without the solution) earns XP.
+ * - Practice steps: the day's judge problems with time boxes. Never block Continue.
+ *
+ * Visual continuity: when consecutive steps show visuals of the same kind (array, grid, tree, graph, flow, sequence),
+ * the player keeps one visual mounted across them, so the diagram engine animates the change like a flip book.
  */
 import { useEffect, useLayoutEffect, useReducer, useRef, useState, type ReactNode } from "react";
 import { AnimatePresence, motion, type Variants } from "framer-motion";
-import type { Chapter, Lesson, Step } from "@/content/types";
+import type { Chapter, Lesson, Step, Visual as VisualT } from "@/content/types";
 import type { Resume } from "@/state/progress";
 import { progress } from "@/state/progress";
 import { useReducedMotion } from "@/lib/hooks";
@@ -21,11 +29,15 @@ import { Inline, Text } from "./Text";
 import { XP, fmtAnswer, gradeMulti, gradeNumber, gradeOrder, hintOf, isInteractive, parseNumber, type Interactive } from "./grade";
 import {
   MatchView, MultiView, NumberView, OrderView, QuizView, ReadView, RevealView, SummaryView, WidgetView, type Phase, type ViewCtx,
+  VisualFrame,
 } from "./steps";
+import { CodeView, RUN_KEY, type CodeState } from "./Code";
+import { PracticeView } from "./Practice";
+import type { RunResult } from "@/runner";
 import { Completion } from "./Completion";
 import { Teach } from "./Teach";
 import { DrawCheck, IconBolt, IconBulb, IconChevronLeft, IconClose, IconKeyboard, IconX } from "./icons";
-import { WIDE_QUERY, WideCtx, splitsVisual } from "./layoutCtx";
+import { FLIP_KINDS, HoistCtx, WIDE_QUERY, WideCtx, splitsVisual } from "./layoutCtx";
 import "./player.css";
 
 export interface LessonPlayerProps {
@@ -43,9 +55,12 @@ export interface LessonPlayerProps {
 const isGuess = (s: Step | undefined): s is Interactive => !!s && isInteractive(s) && !!s.guess;
 const isScored = (s: Step | undefined): s is Interactive => !!s && isInteractive(s) && !s.guess;
 const teachOf = (s: Step): string | undefined => {
-  const t = isInteractive(s) ? s.teach : undefined;
+  const t = isInteractive(s) || s.kind === "code" ? s.teach : undefined;
   return typeof t === "string" && t.trim() ? t : undefined;
 };
+/** Steps that show "I'm not sure, teach me": scored questions, and code steps with `teach`. */
+const teachable = (s: Step | undefined): boolean => !!s && (isScored(s) || (s.kind === "code" && !!teachOf(s)));
+const visualOf = (s: Step | undefined): VisualT | undefined => (s && "visual" in s ? s.visual : undefined);
 const initAns = (s: Step | undefined): unknown => (!s ? null : s.kind === "multi" || s.kind === "order" ? [] : s.kind === "number" ? "" : null);
 /** A short signature, so a saved answer is never restored onto a step that content authors have since changed. */
 const sigOf = (s: Step): string => {
@@ -71,6 +86,8 @@ interface StepState {
   taught: boolean;
   /** wrong pairs so far on a match step (kept if the reader leaves and comes back) */
   matchMiss: number;
+  /** code steps: the latest run, passed, solution shown */
+  code?: CodeState;
 }
 const freshState = (s: Step): StepState => ({
   sig: sigOf(s), phase: "answer", attempt: 0, ans: initAns(s), ruled: [], ok: false, verdict: null,
@@ -105,12 +122,14 @@ function pastState(s: Step, widgetDone: boolean): StepState {
 /* ---------------- Session (so resume keeps XP, accuracy, time and earlier answers honest) ---------------- */
 interface Session {
   firstTry: Record<number, boolean>; widgets: number[]; missed: number[]; elapsed: number;
+  /** code steps that earned XP (all tests passed without the solution) */
+  code: number[];
   /** steps where the reader asked to be taught */
   taught: number[];
   /** final state of each step the reader has passed, for Back after a reload */
   snaps: Record<number, StepState>;
 }
-const freshSession = (): Session => ({ firstTry: {}, widgets: [], missed: [], elapsed: 0, taught: [], snaps: {} });
+const freshSession = (): Session => ({ firstTry: {}, widgets: [], missed: [], elapsed: 0, code: [], taught: [], snaps: {} });
 const skey = (id: string) => `cp30:player:${id}`;
 function loadSession(id: string): Session | null {
   try { const raw = localStorage.getItem(skey(id)); return raw ? { ...freshSession(), ...JSON.parse(raw) } : null; } catch { return null; }
@@ -197,6 +216,8 @@ export default function LessonPlayer({ chapter, lesson, lessonNumber, nextHref, 
   const rootRef = useRef<HTMLDivElement>(null);
   const barRef = useRef<HTMLDivElement>(null);
   const stepKeys = useRef<((e: KeyboardEvent) => boolean) | null>(null);
+  const codeRun = useRef<(() => void) | null>(null);
+  const [codeBusy, setCodeBusy] = useState(false);
   const markRef = useRef(performance.now());
   const justAnswered = useRef(false);
 
@@ -237,7 +258,7 @@ export default function LessonPlayer({ chapter, lesson, lessonNumber, nextHref, 
   /* ---------- widget skip timer ---------- */
   useEffect(() => {
     if (screen !== "steps" || step?.kind !== "widget" || history) return;
-    const t = setTimeout(() => setSkipReady(true), 20000);
+    const t = setTimeout(() => setSkipReady(true), 5000); // a widget never traps the reader
     return () => clearTimeout(t);
   }, [pos, mode, screen]); // eslint-disable-line react-hooks/exhaustive-deps
 
@@ -247,7 +268,7 @@ export default function LessonPlayer({ chapter, lesson, lessonNumber, nextHref, 
     justAnswered.current = false;
     const t = setTimeout(() => {
       const root = rootRef.current, bar = barRef.current; if (!root || !bar) return;
-      const target = root.querySelector<HTMLElement>(".lp-step .st-bad, .lp-step .st-good, .lp-step .st-ans, .lp-step .lp-num, .lp-step .lp-slots, .lp-step .lp-match");
+      const target = root.querySelector<HTMLElement>(".lp-step .st-bad, .lp-step .st-good, .lp-step .st-ans, .lp-step .lp-num, .lp-step .lp-slots, .lp-step .lp-match, .lp-step .ce-res-head");
       if (!target) return;
       const over = target.getBoundingClientRect().bottom - bar.getBoundingClientRect().top + 16;
       if (over > 0) root.scrollBy({ top: over, behavior: reduced ? "auto" : "smooth" });
@@ -290,7 +311,7 @@ export default function LessonPlayer({ chapter, lesson, lessonNumber, nextHref, 
   }
 
   function openTeach() {
-    if (!isScored(step) || history || st.taught || phase === "done") return;
+    if (!teachable(step) || history || st.taught || (phase === "done" && step?.kind !== "code")) return;
     patch({ taught: true });
     if (mode === "main" && !session.current.taught.includes(idx)) { session.current.taught.push(idx); saveSession(lesson.id, session.current); }
   }
@@ -422,6 +443,27 @@ export default function LessonPlayer({ chapter, lesson, lessonNumber, nextHref, 
     }
   }
 
+  /* ---------- code steps ---------- */
+  function onCodeResult(r: RunResult) {
+    if (!step || step.kind !== "code") return;
+    const all = !r.error && r.results.length > 0 && r.results.every((x) => x.ok);
+    const prev = st.code ?? {};
+    let xp = 0;
+    if (all && !prev.solution && mode === "main" && !session.current.code.includes(idx)) {
+      session.current.code.push(idx); saveSession(lesson.id, session.current); bump();
+      xp = XP.code;
+    }
+    if (all) justAnswered.current = true;
+    patch({
+      phase: "done", ok: all || !!prev.passed,
+      code: { ...prev, run: slimRun(r), passed: prev.passed || all },
+      verdict: all ? { tone: "good", title: "All tests pass", lines: [], explain: prev.solution ? undefined : step.explain, xp } : null,
+    });
+  }
+  function onCodeSolution() {
+    patch({ phase: "done", code: { ...(st.code ?? {}), solution: true } });
+  }
+
   function next() {
     if (pos < furthest) return goTo(pos + 1);
     snapStore()[idx] = st;
@@ -437,7 +479,7 @@ export default function LessonPlayer({ chapter, lesson, lessonNumber, nextHref, 
       const s = session.current;
       const answered = Object.keys(s.firstTry).length; // guesses are never recorded, so accuracy excludes them
       const right = Object.values(s.firstTry).filter(Boolean).length;
-      const xp = XP.lesson + XP.firstTry * right + XP.widget * s.widgets.length;
+      const xp = XP.lesson + XP.firstTry * right + XP.widget * s.widgets.length + XP.code * s.code.length;
       const accuracy = answered ? right / answered : null;
       progress.completeLesson(lesson.id, xp, accuracy ?? 1);
       const missed = [...new Set(s.missed)].sort((a, b) => a - b);
@@ -480,7 +522,19 @@ export default function LessonPlayer({ chapter, lesson, lessonNumber, nextHref, 
     if (furthest - pos >= 2) secondary = <button type="button" className="lp-link" onClick={() => goTo(furthest)}>Return to step {furthest + 1}</button>;
   } else {
     switch (step.kind) {
-      case "read": case "summary": primary = cont(); break;
+      case "read": case "summary": case "practice": primary = cont(); break;
+      case "code": {
+        const c = st.code;
+        if (!c?.run && !c?.solution) {
+          primary = { label: codeBusy ? "Running" : "Run tests", onClick: () => codeRun.current?.(), disabled: codeBusy, tone: "accent" };
+          if (!codeBusy) secondary = <button type="button" className="lp-link" onClick={next}>Skip for now</button>;
+        } else {
+          const pass = !!c.run && !c.run.error && c.run.results.every((x) => x.ok);
+          primary = cont(pass ? "good" : "accent");
+          if (!pass && !codeBusy && c.run) secondary = <span className="lp-bar-note">Not every test passes yet. Fix it, or continue.</span>;
+        }
+        break;
+      }
       case "reveal": primary = phase === "done" ? cont() : { label: "Reveal", onClick: () => patch({ phase: "done" }), tone: "accent" }; break;
       case "widget":
         primary = { ...cont(st.widgetDone ? "good" : "accent"), disabled: !st.widgetDone };
@@ -502,7 +556,7 @@ export default function LessonPlayer({ chapter, lesson, lessonNumber, nextHref, 
 
   /* ---------- keyboard ---------- */
   const canBack = screen === "steps" && pos > 0;
-  const canTeach = screen === "steps" && isScored(step) && !history && phase !== "done" && !st.taught;
+  const canTeach = screen === "steps" && teachable(step) && !history && (phase !== "done" || step?.kind === "code") && !st.taught;
   const live = useRef({ primary, step, phase, showKeys, screen, canBack, canTeach, back, openTeach });
   live.current = { primary, step, phase, showKeys, screen, canBack, canTeach, back, openTeach };
   useEffect(() => {
@@ -510,6 +564,7 @@ export default function LessonPlayer({ chapter, lesson, lessonNumber, nextHref, 
       if (e.defaultPrevented || e.metaKey || e.ctrlKey || e.altKey) return;
       const L = live.current;
       const t = e.target as HTMLElement | null;
+      if (t?.closest?.("[data-own-keys]")) return; // the code editor owns every key it gets
       const inField = !!t && ((t.tagName === "INPUT" && !(t as HTMLInputElement).readOnly) || t.tagName === "TEXTAREA" || t.tagName === "SELECT" || t.isContentEditable);
       if (e.key === "Escape") { e.preventDefault(); if (L.showKeys) setShowKeys(false); else go(backHref); return; }
       if (t?.closest(".lp-widget")) return; // simulations own their keys
@@ -539,18 +594,26 @@ export default function LessonPlayer({ chapter, lesson, lessonNumber, nextHref, 
 
   /* ---------- render ---------- */
   const right = Object.values(session.current.firstTry).filter(Boolean).length;
-  const xpShown = result ? result.xp : XP.firstTry * right + XP.widget * session.current.widgets.length;
+  const xpShown = result ? result.xp : XP.firstTry * right + XP.widget * session.current.widgets.length + XP.code * session.current.code.length;
   const total = queue.length;
   const liveDone = pos === furthest ? phase === "done" : liveRef.current?.st.phase === "done";
   const filled = screen === "done" ? total : furthest + (liveDone ? 1 : 0);
-  const assist = step && isScored(step) && screen === "steps" ? (
-    <Teach open={st.taught} canOpen={!history && phase !== "done"} onOpen={openTeach}
+  const assist = step && teachable(step) && screen === "steps" ? (
+    <Teach open={st.taught} canOpen={!history && (phase !== "done" || step.kind === "code")} onOpen={openTeach}
       text={teachOf(step) ?? hintOf(step)} onBack={pos > 0 ? back : undefined} reduced={reduced} />
   ) : undefined;
   const ctx: ViewCtx = { phase, ok: st.ok, reduced, seed, keys: (fn) => { stepKeys.current = fn; }, guess, assist, past: history };
   const stepKey = `${mode}-${pos}-${screen}`;
-  const stepVisual = step && screen === "steps" && "visual" in step ? step.visual : undefined;
+  const stepVisual = screen === "steps" ? visualOf(step) : undefined;
   const layout = screen !== "steps" ? "" : step?.kind === "widget" ? "is-wide" : wide && splitsVisual(stepVisual) ? "is-split" : "";
+  const split = layout === "is-split";
+  // One mounted visual per run of consecutive same-kind steps (flip book); any other visual gets its own key.
+  let visualKey = "";
+  if (stepVisual) {
+    let p = pos;
+    if (FLIP_KINDS.has(stepVisual.kind)) while (p > 0 && visualOf(steps[queue[p - 1]])?.kind === stepVisual.kind) p--;
+    visualKey = `${mode}-v${p}-${split ? "s" : "t"}`;
+  }
   const shown = verdict && history ? { ...verdict, xp: 0 } : verdict;
   const opener = screen === "steps" && mode === "main" && pos === 0 && lesson.goal?.trim();
 
@@ -592,32 +655,52 @@ export default function LessonPlayer({ chapter, lesson, lessonNumber, nextHref, 
       </header>
 
       <main className="lp-main">
-        <AnimatePresence mode="wait" initial={false} custom={dir}>
-          <StepFrame key={stepKey} reduced={reduced} layout={layout} rootRef={rootRef} dir={dir}>
-            {screen === "done" && result ? (
-              <Completion lessonTitle={lesson.title} xp={result.xp} accuracy={result.accuracy} timeMs={result.timeMs} taught={result.taught}
-                missed={missedNow.length} review={result.review} partColor={partColor} reduced={reduced} onReview={startReview} />
-            ) : step ? (
-              <>
-                {opener && (
-                  <div className="lp-goal" role="note" aria-label="In this lesson">
-                    <div className="lp-goal-label">In this lesson</div>{" "}
-                    <p className="lp-goal-text"><Inline text={opener} /></p>
-                  </div>
-                )}
-                {step.kind === "read" && <ReadView step={step} />}
-                {step.kind === "quiz" && <QuizView step={step} ans={ans as number | null} setAns={setAns} ruled={st.ruled} ctx={ctx} />}
-                {step.kind === "multi" && <MultiView step={step} ans={ans as number[]} setAns={setAns} ctx={ctx} />}
-                {step.kind === "number" && <NumberView step={step} ans={ans as string} setAns={setAns} ctx={ctx} revealLine={st.numberLine} />}
-                {step.kind === "order" && <OrderView step={step} ans={ans as number[]} setAns={setAns} ctx={ctx} />}
-                {step.kind === "match" && <MatchView step={step} ctx={ctx} onDone={onMatchDone} onMiss={(n) => patch({ matchMiss: n })} startMistakes={st.matchMiss} />}
-                {step.kind === "reveal" && <RevealView step={step} ctx={ctx} self={st.self} setSelf={setSelf} />}
-                {step.kind === "widget" && <WidgetView step={step} done={st.widgetDone} xp={mode === "main" && session.current.widgets.includes(idx) ? XP.widget : 0} onComplete={onWidgetComplete} />}
-                {step.kind === "summary" && <SummaryView step={step} reduced={reduced} />}
-              </>
-            ) : null}
-          </StepFrame>
-        </AnimatePresence>
+        <div className={`lp-stage ${layout}`}>
+          <AnimatePresence initial={false}>
+            {opener && (
+              <motion.div key="goal" className="lp-goal" role="note" aria-label="In this lesson" exit={{ opacity: 0, transition: { duration: 0.12 } }}>
+                <div className="lp-goal-label">In this lesson</div>{" "}
+                <p className="lp-goal-text"><Inline text={opener} /></p>
+              </motion.div>
+            )}
+          </AnimatePresence>
+          <div className={split ? "lp-split" : "lp-stack"}>
+            <AnimatePresence mode="wait" initial={false} custom={dir}>
+              {stepVisual && (
+                <VisualSlot key={visualKey} reduced={reduced} dir={dir} className={split ? "lp-split-visual" : "lp-visual-slot"}>
+                  <VisualFrame visual={stepVisual} mode={split ? "split" : "stacked"} />
+                </VisualSlot>
+              )}
+            </AnimatePresence>
+            <div className={split ? "lp-split-text" : "lp-stack-text"}>
+              <AnimatePresence mode="wait" initial={false} custom={dir}>
+                <StepFrame key={stepKey} reduced={reduced} layout={layout} rootRef={rootRef} dir={dir}>
+                  {screen === "done" && result ? (
+                    <Completion lessonTitle={lesson.title} xp={result.xp} accuracy={result.accuracy} timeMs={result.timeMs} taught={result.taught}
+                      missed={missedNow.length} review={result.review} partColor={partColor} reduced={reduced} onReview={startReview} />
+                  ) : step ? (
+                    <HoistCtx.Provider value={true}>
+                      {step.kind === "read" && <ReadView step={step} />}
+                      {step.kind === "quiz" && <QuizView step={step} ans={ans as number | null} setAns={setAns} ruled={st.ruled} ctx={ctx} />}
+                      {step.kind === "multi" && <MultiView step={step} ans={ans as number[]} setAns={setAns} ctx={ctx} />}
+                      {step.kind === "number" && <NumberView step={step} ans={ans as string} setAns={setAns} ctx={ctx} revealLine={st.numberLine} />}
+                      {step.kind === "order" && <OrderView step={step} ans={ans as number[]} setAns={setAns} ctx={ctx} />}
+                      {step.kind === "match" && <MatchView step={step} ctx={ctx} onDone={onMatchDone} onMiss={(n) => patch({ matchMiss: n })} startMistakes={st.matchMiss} />}
+                      {step.kind === "reveal" && <RevealView step={step} ctx={ctx} self={st.self} setSelf={setSelf} />}
+                      {step.kind === "widget" && <WidgetView step={step} done={st.widgetDone} xp={mode === "main" && session.current.widgets.includes(idx) ? XP.widget : 0} onComplete={onWidgetComplete} />}
+                      {step.kind === "summary" && <SummaryView step={step} reduced={reduced} />}
+                      {step.kind === "code" && (
+                        <CodeView step={step} state={st.code ?? {}} draftKey={`cp30:code:${lesson.id}:${idx}`} assist={assist} past={history} reduced={reduced}
+                          register={(fn) => { codeRun.current = fn; }} onBusy={setCodeBusy} onResult={onCodeResult} onSolution={onCodeSolution} />
+                      )}
+                      {step.kind === "practice" && <PracticeView step={step} past={history} />}
+                    </HoistCtx.Provider>
+                  ) : null}
+                </StepFrame>
+              </AnimatePresence>
+            </div>
+          </div>
+        </div>
       </main>
 
       <div ref={barRef} className={`lp-bar ${shown ? `has-fb tone-${shown.tone}` : ""}`}>
@@ -703,15 +786,35 @@ function StepFrame({ children, reduced, layout, rootRef, dir }: { children: Reac
   );
 }
 
+/** Holds the step visual. Keyed by the visual run, so it stays mounted while consecutive steps share a kind. */
+function VisualSlot({ children, reduced, dir, className }: { children: ReactNode; reduced: boolean; dir: number; className: string }) {
+  return (
+    <motion.div className={className} custom={dir} variants={reduced ? STEP_FADE : STEP_VARIANTS} initial="enter" animate="center" exit="exit">
+      {children}
+    </motion.div>
+  );
+}
+
+/** Keep a run result small enough for the session snapshot in localStorage. */
+function slimRun(r: RunResult): RunResult {
+  const cut = (x?: string) => (x && x.length > 1200 ? x.slice(0, 1200) + "\n..." : x);
+  return {
+    ...r, stdout: cut(r.stdout) ?? "", trace: cut(r.trace),
+    results: r.results.map((t) => ({ ...t, got: cut(t.got) ?? "", expected: cut(t.expected) ?? "", input: cut(t.input) ?? "", printed: cut(t.printed), stderr: cut(t.stderr), trace: cut(t.trace) })),
+  };
+}
+
 const KEYS: [string[], string][] = [
   [["Enter"], "Check, then Continue"],
   [["1", "2", "3", "4"], "Pick an option"],
   [["A", "B", "C"], "Pick on the right side (match)"],
   [["T"], "I'm not sure, teach me"],
+  [[RUN_KEY], "Run tests (in the code editor)"],
+  [["Tab", "Shift Tab"], "Indent, dedent (in the code editor)"],
   [["←"], "Go back a step"],
   [["Backspace"], "Remove the last item (order)"],
   [["Space"], "Reveal (think-first steps)"],
-  [["Esc"], "Close the lesson"],
+  [["Esc"], "Close the lesson (in the editor: leave the editor)"],
   [["?"], "Show or hide this list"],
 ];
 

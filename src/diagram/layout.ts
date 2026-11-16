@@ -13,18 +13,18 @@ export interface LEdge {
 }
 export interface LGroup extends Box { id: string; label: string; tone?: Tone; lines: string[] }
 export interface FlowLayout {
-  w: number; h: number; style: "row" | "stack"; nodeW: number;
+  w: number; h: number; style: "row" | "stack" | "compact"; nodeW: number;
   nodes: LNode[]; edges: LEdge[]; groups: LGroup[];
   dir: "right" | "down"; transposed: boolean; overflow: boolean;
 }
 
 /* Type and box metrics (px). Text never goes below 12px. */
 export const M = {
-  label: 14, labelLH: 18, labelW: 600,
+  label: 14, labelLH: 18, labelW: 600, labelC: 13, labelCLH: 17,
   sub: 12.5, subLH: 16,
   edge: 12, edgeLH: 15, edgeW: 500, pillPadX: 8, pillPadY: 4,
   group: 12.5, groupLH: 16,
-  icon: 32, padX: 12, padY: 12, gapIcon: 10,
+  icon: 32, padX: 12, padY: 12, padYc: 10, gapIcon: 10,
   minNW: 88, maxNW: 212, maxNW1: 300,
   arrow: 8, corner: 12, pad: 4,
 };
@@ -78,8 +78,8 @@ function attemptOnce(spec: FlowSpec, nodesIn: FlowNode[], dir: "right" | "down",
 
   /* ---- gaps between grid slots, widened where labels or groups need room ---- */
   const hasG = groupsIn.length > 0;
-  const baseCG = (dir === "right" ? 52 : 40) + (hasG ? 12 : 0);
-  const baseRG = (dir === "down" ? 46 : 40) + (hasG ? 10 : 0);
+  const baseCG = (availW < 440 ? 24 : dir === "right" ? 52 : 40) + (hasG ? 12 : 0);
+  const baseRG = (dir === "down" ? (availW < 440 ? 32 : 46) : 40) + (hasG ? 10 : 0);
   const cg: number[] = Array(Math.max(0, nc - 1)).fill(baseCG);
   const rg: number[] = Array(Math.max(0, nr - 1)).fill(baseRG);
   const labelNeedCol: { e: FlowEdge; gap: number }[] = [];
@@ -133,14 +133,17 @@ function attemptOnce(spec: FlowSpec, nodesIn: FlowNode[], dir: "right" | "down",
   nw = Math.floor(nw);
 
   /* ---- card text ---- */
-  const style: "row" | "stack" = nw >= 150 ? "row" : "stack";
-  const textW = style === "row" ? nw - 2 * M.padX - M.icon - M.gapIcon : nw - 12;
+  // phones: text-only cards (no icon tile) keep tall, turned-on-their-side diagrams short enough to fit a lesson frame
+  const style: "row" | "stack" | "compact" = nw >= 150 ? "row" : narrow ? "compact" : "stack";
+  const compact = style === "compact";
+  const textW = style === "row" ? nw - 2 * M.padX - M.icon - M.gapIcon : nw - (compact ? 10 : 12);
+  const lfs = compact ? M.labelC : M.label, llh = compact ? M.labelCLH : M.labelLH;
   let nh = 0;
   const texts = nodesIn.map((n) => {
-    const label = wrap(plain(n.label), textW, M.label, M.labelW, 2, false);
+    const label = wrap(plain(n.label), textW, lfs, M.labelW, 2, false);
     const sub = n.sub ? wrap(plain(n.sub), textW, M.sub, 400, 2, false) : [];
-    const th = label.length * M.labelLH + (sub.length ? 2 + sub.length * M.subLH : 0);
-    const h = style === "row" ? Math.max(M.icon, th) + 2 * M.padY : M.padY + M.icon + 8 + th + M.padY;
+    const th = label.length * llh + (sub.length ? 2 + sub.length * M.subLH : 0);
+    const h = style === "row" ? Math.max(M.icon, th) + 2 * M.padY : style === "compact" ? th + 2 * M.padYc : M.padY + M.icon + 8 + th + M.padY;
     nh = Math.max(nh, h);
     return { label, sub };
   });
@@ -175,7 +178,19 @@ function attemptOnce(spec: FlowSpec, nodesIn: FlowNode[], dir: "right" | "down",
 
   /* ---- route edges ---- */
   const keys = new Set(edgesIn.map(edgeKey));
-  const routed: { pts: Pt[]; from: string; to: string }[] = [];
+  const routed: Routed[] = [];
+  const sty = (e: FlowEdge) => `${e.dashed ? "d" : "s"}|${e.tone ?? "neutral"}`;
+  // an edge that has no reverse partner may shift off-centre on its ports, so it never runs on top of another edge
+  const best = (S: LNode, T: LNode, e: FlowEdge, others: Routed[], pair: number) => {
+    const offs = pair ? [pair] : [0, -12, 12];
+    let top: { pts: Pt[]; score: number } | null = null;
+    for (const o of offs) {
+      const r = route(S, T, nodes, VX, HY, dir, others, o, sty(e));
+      const sc = r.score + (o && !pair ? 8 : 0);
+      if (!top || sc < top.score) top = { pts: r.pts, score: sc };
+    }
+    return top!.pts;
+  };
   const order = edgesIn.map((e, i) => ({ e, i, d: dist(N.get(e.from)!, N.get(e.to)!) })).sort((a, b) => a.d - b.d);
   const out: (LEdge | null)[] = Array(edgesIn.length).fill(null);
   // pass 1 routes short edges first; pass 2 re-routes each edge knowing where all the others went
@@ -184,13 +199,13 @@ function attemptOnce(spec: FlowSpec, nodesIn: FlowNode[], dir: "right" | "down",
     const S = N.get(e.from)!, T = N.get(e.to)!;
     const off = keys.has(`${e.to}>${e.from}`) ? (e.from < e.to ? -7 : 7) : 0;
     slot[i] = routed.length;
-    routed.push({ pts: route(S, T, nodes, VX, HY, dir, routed, off), from: e.from, to: e.to });
+    routed.push({ pts: best(S, T, e, routed, off), from: e.from, to: e.to, sty: sty(e) });
   }
   for (const { e, i } of order) {
     const S = N.get(e.from)!, T = N.get(e.to)!;
     const off = keys.has(`${e.to}>${e.from}`) ? (e.from < e.to ? -7 : 7) : 0;
     const others = routed.filter((_, k) => k !== slot[i]);
-    routed[slot[i]] = { pts: route(S, T, nodes, VX, HY, dir, others, off), from: e.from, to: e.to };
+    routed[slot[i]] = { pts: best(S, T, e, others, off), from: e.from, to: e.to, sty: sty(e) };
   }
   for (const { e, i } of order) {
     const pts = routed[slot[i]].pts;
@@ -259,7 +274,9 @@ function port(b: Box, s: Side, off: number): Pt {
   return { x: ccx(b) + off, y: b.y + b.h };
 }
 
-function route(S: LNode, T: LNode, nodes: LNode[], VX: number[], HY: number[], dir: "right" | "down", routed: { pts: Pt[]; from: string; to: string }[], off: number): Pt[] {
+interface Routed { pts: Pt[]; from: string; to: string; sty: string }
+
+function route(S: LNode, T: LNode, nodes: LNode[], VX: number[], HY: number[], dir: "right" | "down", routed: Routed[], off: number, sty: string): { pts: Pt[]; score: number } {
   const cands: { pts: Pt[]; kind: string }[] = [];
   const sx = ccx(S), sy = ccy(S), tx = ccx(T), ty = ccy(T);
   const dx = tx - sx, dy = ty - sy;
@@ -287,8 +304,8 @@ function route(S: LNode, T: LNode, nodes: LNode[], VX: number[], HY: number[], d
   }
   // L shapes
   if (Math.abs(dx) > 1 && Math.abs(dy) > 1) {
-    { const a = port(S, H[0], 0), b = port(T, V[1], 0); cands.push({ pts: [a, { x: b.x, y: a.y }, b], kind: "hv" }); }
-    { const a = port(S, V[0], 0), b = port(T, H[1], 0); cands.push({ pts: [a, { x: a.x, y: b.y }, b], kind: "vh" }); }
+    { const a = port(S, H[0], off), b = port(T, V[1], off); cands.push({ pts: [a, { x: b.x, y: a.y }, b], kind: "hv" }); }
+    { const a = port(S, V[0], off), b = port(T, H[1], off); cands.push({ pts: [a, { x: a.x, y: b.y }, b], kind: "vh" }); }
   }
   // U shapes around obstacles (same row / same column)
   for (const s of ["top", "bottom"] as const) {
@@ -322,7 +339,8 @@ function route(S: LNode, T: LNode, nodes: LNode[], VX: number[], HY: number[], d
     if (c.kind === "u") s += 40;
     // interaction with already-routed edges
     for (const r of routed) {
-      const share = r.from === (S.id) || r.to === T.id;
+      // fan-out / fan-in of the same look may share a trunk; a dashed or coloured edge never rides on another
+      const share = (r.from === S.id || r.to === T.id) && r.sty === sty;
       for (let i = 0; i < pts.length - 1; i++)
         for (let j = 0; j < r.pts.length - 1; j++) {
           const k = segRelation(pts[i], pts[i + 1], r.pts[j], r.pts[j + 1]);
@@ -332,7 +350,7 @@ function route(S: LNode, T: LNode, nodes: LNode[], VX: number[], HY: number[], d
     }
     if (s < bestScore) { bestScore = s; best = { ...c, pts }; }
   }
-  return best.pts;
+  return { pts: best.pts, score: bestScore };
 }
 
 function sideOf(b: Box, p: Pt): Side {

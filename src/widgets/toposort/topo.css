@@ -1,0 +1,54 @@
+/* Toposort lab. Tokens only. */
+.tp-stage { padding: 10px 12px 14px; }
+.tp-tool { display: flex; align-items: center; justify-content: space-between; gap: 6px 12px; flex-wrap: wrap; margin-bottom: 4px; }
+.tp-hint { font-size: 14px; line-height: 20px; font-weight: 600; color: var(--ink-2); }
+.tp-legend { display: flex; flex-wrap: wrap; gap: 4px 12px; font-size: 12px; line-height: 16px; color: var(--muted); }
+.tp-legend span { display: inline-flex; align-items: center; gap: 5px; }
+.tp-legend i { width: 10px; height: 10px; border-radius: 50%; border: 1.5px solid color-mix(in srgb, var(--ink) 38%, transparent); background: var(--surface); }
+.tp-legend i.q { background: var(--accent-soft); border-color: var(--accent); }
+.tp-legend i.c { background: var(--accent); border-color: var(--accent); }
+.tp-legend i.d { background: var(--surface-3); border-color: var(--surface-3); }
+.tp-legend i.x { background: var(--bad-soft); border-color: var(--bad); }
+.tp-svg { display: block; margin: 0 auto; overflow: visible; max-width: 100%; height: auto; }
+.tp-below { display: flex; flex-direction: column; gap: 8px; margin-top: 6px; padding-top: 10px; border-top: 1px dashed var(--line); }
+
+/* edges */
+.tp-edge-line { fill: none; stroke: var(--muted); stroke-width: 1.75; stroke-linecap: round; transition: stroke var(--dur) var(--ease-color), opacity var(--dur) var(--ease-color), stroke-width var(--dur) var(--ease); }
+.tp-edge-head { fill: var(--muted); transition: fill var(--dur) var(--ease-color), opacity var(--dur) var(--ease-color); }
+.tp-edge.is-used .tp-edge-line { opacity: .28; stroke-dasharray: 4 4; }
+.tp-edge.is-used .tp-edge-head { opacity: .28; }
+.tp-edge.is-fresh .tp-edge-line { opacity: .45; stroke-dasharray: 4 4; }
+.tp-edge.is-fresh .tp-edge-head { opacity: .45; }
+.tp-edge.is-seen .tp-edge-line { stroke: var(--ink-2); }
+.tp-edge.is-seen .tp-edge-head { fill: var(--ink-2); }
+.tp-edge.is-active .tp-edge-line { stroke: var(--accent); stroke-width: 2.75; }
+.tp-edge.is-active .tp-edge-head { fill: var(--accent); }
+.tp-edge.is-bad .tp-edge-line { stroke: var(--bad); stroke-width: 2.5; }
+.tp-edge.is-bad .tp-edge-head { fill: var(--bad); }
+.tp-edge-run { fill: none; stroke: var(--accent); stroke-width: 4; stroke-linecap: round; opacity: .9; pointer-events: none; }
+
+/* nodes */
+.tp-body { fill: var(--surface); stroke: color-mix(in srgb, var(--ink) 38%, transparent); stroke-width: 1.5; transition: fill var(--dur) var(--ease-color), stroke var(--dur) var(--ease-color); filter: drop-shadow(0 1px 1.5px rgba(0,0,0,.08)); }
+.tp-label { font-size: 15px; font-weight: 700; fill: var(--ink); font-variant-numeric: tabular-nums; transition: fill var(--dur) var(--ease-color); }
+.tp-node.s-queue .tp-body { fill: var(--accent-soft); stroke: var(--accent); stroke-width: 2; }
+.tp-node.s-open .tp-body { fill: var(--accent-soft); stroke: var(--accent); stroke-width: 2; stroke-dasharray: 4 3; }
+.tp-node.s-cur .tp-body { fill: var(--accent); stroke: var(--accent); }
+.tp-node.s-cur .tp-label { fill: var(--accent-ink); }
+.tp-node.s-done .tp-body { fill: var(--surface-3); stroke: var(--surface-3); }
+.tp-node.s-done .tp-label { fill: var(--ink-2); }
+.tp-node.s-stuck .tp-body { fill: var(--bad-soft); stroke: var(--bad); stroke-width: 2.5; }
+.tp-node.s-stuck .tp-label { fill: var(--bad-ink); }
+.tp-pulse { fill: none; stroke: var(--accent); stroke-width: 2; transform-box: fill-box; transform-origin: center; }
+.tp-body { transform-box: fill-box; transform-origin: center; }
+
+/* indegree badge */
+.tp-badge rect { fill: var(--surface-2); stroke: color-mix(in srgb, var(--ink) 25%, transparent); stroke-width: 1; transition: fill var(--dur) var(--ease-color), stroke var(--dur) var(--ease-color); }
+.tp-badge text { font-size: 12px; font-weight: 700; fill: var(--ink-2); font-variant-numeric: tabular-nums; transform-box: fill-box; transform-origin: center; }
+.tp-badge.zero rect { fill: var(--surface); stroke: var(--line); }
+.tp-badge.zero text { fill: var(--muted); }
+.tp-badge.flash rect { fill: var(--accent); stroke: var(--accent); }
+.tp-badge.flash text { fill: var(--accent-ink); }
+.tp-node.s-stuck .tp-badge rect { fill: var(--bad); stroke: var(--bad); }
+.tp-node.s-stuck .tp-badge text { fill: var(--on-part); }
+.tp-node.s-done .tp-badge { opacity: .5; }
+.tp-rank { font-size: 12px; font-weight: 600; fill: var(--muted); font-variant-numeric: tabular-nums; }

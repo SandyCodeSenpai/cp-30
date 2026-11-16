@@ -64,9 +64,12 @@
 
 /* ---------------- Reading column ---------------- */
 .lp-main { padding: 20px var(--gutter) calc(var(--lp-bar-h) + 40px); }
-.lp-step { max-width: var(--lp-col); margin: 0 auto; outline: none; }
-.lp-step.is-wide { max-width: 1000px; }
-.lp-step.is-split { max-width: 1320px; }
+/* The stage holds the (possibly persistent) visual and the step text; it sets the column width. */
+.lp-stage { max-width: var(--lp-col); margin: 0 auto; }
+.lp-stage.is-wide { max-width: 1000px; }
+.lp-stage.is-split { max-width: 1320px; }
+.lp-step { outline: none; min-width: 0; }
+.lp-stack-text { min-width: 0; }
 @media (min-width: 768px) { .lp-main { padding-top: 36px; } }
 
 .lp-visual { position: relative; margin: 0 0 24px; min-width: 0; }

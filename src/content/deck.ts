@@ -7,7 +7,7 @@ export const DECK: Card[] = [
   "front": "Longest substring with no repeated character. (|s| ≤ 5·10^4)",
   "pattern": "Variable window + last-seen index of each character",
   "target": "O(n)",
-  "signal": "substring + longest + no repeats (rule 4)"
+  "signal": "substring + longest + no repeats"
  },
  {
   "n": 2,
@@ -31,7 +31,7 @@ export const DECK: Card[] = [
   "front": "Is a string of ( ) [ ] { } correctly nested? (|s| ≤ 10^4)",
   "pattern": "Stack",
   "target": "O(n)",
-  "signal": "brackets (rule 15)"
+  "signal": "brackets"
  },
  {
   "n": 5,
@@ -79,7 +79,7 @@ export const DECK: Card[] = [
   "front": "Count subarrays with sum exactly k; values can be negative. (n ≤ 2·10^4)",
   "pattern": "Prefix sum + map counting earlier prefix sums",
   "target": "O(n)",
-  "signal": "\"exactly k\" + negatives (rule 5)"
+  "signal": "\"exactly k\" + negatives"
  },
  {
   "n": 11,
@@ -103,7 +103,7 @@ export const DECK: Card[] = [
   "front": "Maximum of every block of k consecutive elements. (n ≤ 10^5)",
   "pattern": "Monotonic deque",
   "target": "O(n)",
-  "signal": "max of each fixed-size window (rule 8)"
+  "signal": "max of each fixed-size window"
  },
  {
   "n": 14,
@@ -127,7 +127,7 @@ export const DECK: Card[] = [
   "front": "For each day, how many days until a warmer one. (n ≤ 10^5)",
   "pattern": "Monotonic decreasing stack of indices",
   "target": "O(n)",
-  "signal": "\"how many days until\" (rule 7)"
+  "signal": "\"how many days until\""
  },
  {
   "n": 17,
@@ -143,7 +143,7 @@ export const DECK: Card[] = [
   "front": "Return the positions of two numbers in an unsorted array that add up to a target; exactly one answer exists. (n ≤ 10^4)",
   "pattern": "Hash map value → index; look up target − x before inserting x",
   "target": "O(n)",
-  "signal": "find a partner in unsorted data (Clue List rule 9)"
+  "signal": "find a partner in unsorted data"
  },
  {
   "n": 19,
@@ -167,7 +167,7 @@ export const DECK: Card[] = [
   "front": "Smallest eating speed so all piles are finished within h hours. (n ≤ 10^4, piles ≤ 10^9)",
   "pattern": "Binary search on the answer; check Σ ceil(p / speed) ≤ h",
   "target": "O(n log max)",
-  "signal": "\"minimum speed such that it works\" (rule 30)"
+  "signal": "\"minimum speed such that it works\""
  },
  {
   "n": 22,
@@ -239,7 +239,7 @@ export const DECK: Card[] = [
   "front": "Sorted array: find two numbers that add to a target using O(1) extra space. (n ≤ 3·10^4)",
   "pattern": "Two pointers from both ends",
   "target": "O(n)",
-  "signal": "sorted + pair + O(1) space (rule 2)"
+  "signal": "sorted + pair + O(1) space"
  },
  {
   "n": 31,
@@ -303,7 +303,7 @@ export const DECK: Card[] = [
   "front": "Find a target in a sorted array of distinct values that was rotated at an unknown point, in O(log n).",
   "pattern": "Binary search; decide which half is sorted",
   "target": "O(log n)",
-  "signal": "rotated sorted (rule 3)"
+  "signal": "rotated sorted"
  },
  {
   "n": 39,
@@ -311,7 +311,7 @@ export const DECK: Card[] = [
   "front": "Group words that use exactly the same letters the same number of times. (n ≤ 10^4 words, length ≤ 100)",
   "pattern": "Hash map keyed by the sorted word or a 26-count tuple",
   "target": "O(n·L log L)",
-  "signal": "\"same letters\" → canonical key (rule 10)"
+  "signal": "\"same letters\" → canonical key"
  },
  {
   "n": 40,
@@ -367,7 +367,7 @@ export const DECK: Card[] = [
   "front": "n courses and prerequisite pairs; can all of them be finished? (n ≤ 2000)",
   "pattern": "Kahn's topological sort; a cycle exists if not every node is popped",
   "target": "O(n + m)",
-  "signal": "prerequisites (rule 24)"
+  "signal": "prerequisites"
  },
  {
   "n": 47,
@@ -391,7 +391,7 @@ export const DECK: Card[] = [
   "front": "k-th largest element. (n ≤ 10^5)",
   "pattern": "Min-heap of size k (or quickselect)",
   "target": "O(n log k)",
-  "signal": "k-th largest (rule 11)"
+  "signal": "k-th largest"
  },
  {
   "n": 50,
@@ -415,7 +415,7 @@ export const DECK: Card[] = [
   "front": "Merge all overlapping intervals. (n ≤ 10^4)",
   "pattern": "Sort by start, sweep",
   "target": "O(n log n)",
-  "signal": "intervals + overlap (rule 29)"
+  "signal": "intervals + overlap"
  },
  {
   "n": 53,
@@ -423,7 +423,7 @@ export const DECK: Card[] = [
   "front": "Return a binary tree's values level by level.",
   "pattern": "BFS with a queue, one level per loop",
   "target": "O(n)",
-  "signal": "levels (rule 19)"
+  "signal": "levels"
  },
  {
   "n": 54,
@@ -431,7 +431,7 @@ export const DECK: Card[] = [
   "front": "Merge k sorted linked lists with N ≤ 10^4 nodes in total.",
   "pattern": "Min-heap holding each list's head",
   "target": "O(N log k)",
-  "signal": "merge k sorted (rule 12)"
+  "signal": "merge k sorted"
  },
  {
   "n": 55,
@@ -463,7 +463,7 @@ export const DECK: Card[] = [
   "front": "Fewest moves from S to E in a maze with walls. (1000 × 1000)",
   "pattern": "BFS",
   "target": "O(nm)",
-  "signal": "every step costs the same (rule 22)"
+  "signal": "every step costs the same"
  },
  {
   "n": 59,
@@ -479,7 +479,7 @@ export const DECK: Card[] = [
   "front": "Numbers arrive one at a time; after each, print the median so far. (≤ 5·10^4 numbers)",
   "pattern": "Two heaps",
   "target": "O(log n) per number",
-  "signal": "median of a stream (rule 13)"
+  "signal": "median of a stream"
  },
  {
   "n": 61,
@@ -503,7 +503,7 @@ export const DECK: Card[] = [
   "front": "Count groups of connected land cells in a grid. (300 × 300)",
   "pattern": "Flood fill with iterative BFS/DFS",
   "target": "O(nm)",
-  "signal": "count regions (rule 21)"
+  "signal": "count regions"
  },
  {
   "n": 64,
@@ -535,7 +535,7 @@ export const DECK: Card[] = [
   "front": "Is this binary tree a valid search tree?",
   "pattern": "DFS passing (low, high) bounds, or check in-order is strictly increasing",
   "target": "O(n)",
-  "signal": "BST validity (rule 20)"
+  "signal": "BST validity"
  },
  {
   "n": 68,
@@ -575,7 +575,7 @@ export const DECK: Card[] = [
   "front": "k-th smallest value in a binary search tree.",
   "pattern": "In-order traversal, stop at k",
   "target": "O(h + k)",
-  "signal": "BST + k-th (rule 20)"
+  "signal": "BST + k-th"
  },
  {
   "n": 73,
@@ -591,7 +591,7 @@ export const DECK: Card[] = [
   "front": "A signal starts at node k on directed edges with weights ≥ 0. When have all nodes received it? (n ≤ 100, m ≤ 6000)",
   "pattern": "Dijkstra; answer = largest distance",
   "target": "O(m log n)",
-  "signal": "different edge weights (rule 23)"
+  "signal": "different edge weights"
  },
  {
   "n": 75,
@@ -655,7 +655,7 @@ export const DECK: Card[] = [
   "front": "Depth of a binary tree. (≤ 10^4 nodes)",
   "pattern": "DFS returning height (BFS by levels if it may be deep)",
   "target": "O(n)",
-  "signal": "depth (rule 18)"
+  "signal": "depth"
  },
  {
   "n": 83,
@@ -687,7 +687,7 @@ export const DECK: Card[] = [
   "front": "Print every subset of n distinct numbers. (n ≤ 15)",
   "pattern": "Backtracking (or loop over bitmasks)",
   "target": "O(2^n · n)",
-  "signal": "\"every\" + n ≤ 15 (rule 26)"
+  "signal": "\"every\" + n ≤ 15"
  },
  {
   "n": 87,
@@ -703,7 +703,7 @@ export const DECK: Card[] = [
   "front": "Roads are added one at a time; after each, print the number of connected regions. (n, m ≤ 10^5)",
   "pattern": "Union-Find",
   "target": "O(m α(n))",
-  "signal": "edges arrive over time (rule 25)"
+  "signal": "edges arrive over time"
  },
  {
   "n": 89,
@@ -743,7 +743,7 @@ export const DECK: Card[] = [
   "front": "Length of the longest sequence of characters that appears in order in both strings. (each ≤ 1000)",
   "pattern": "LCS DP over (i, j)",
   "target": "O(nm)",
-  "signal": "two strings + in order but not contiguous (rule 28)"
+  "signal": "two strings + in order but not contiguous"
  },
  {
   "n": 94,
@@ -1111,7 +1111,7 @@ export const DECK: Card[] = [
   "front": "Count subarrays whose XOR equals k. (n ≤ 2·10^5)",
   "pattern": "Prefix XOR + map of counts",
   "target": "O(n)",
-  "signal": "subarray + XOR (same shape as rule 5)"
+  "signal": "subarray + XOR (same shape as)"
  },
  {
   "n": 140,

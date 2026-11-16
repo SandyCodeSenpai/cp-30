@@ -1,6 +1,6 @@
 import { lazy, Suspense, useCallback, useEffect, useMemo, useState, type ComponentType } from "react";
 import { AnimatePresence, motion } from "framer-motion";
-import { Icon, IconButton, Kbd, springs } from "@/ui";
+import { Icon, IconButton, Kbd, Sheet, springs, type IconName } from "@/ui";
 import { useReducedMotion } from "@/lib/hooks";
 import { Boundary, BackLink } from "./common";
 import { chapterByN } from "./course";
@@ -53,7 +53,7 @@ function useTheme() {
 
 /* ---------------- Routes ---------------- */
 type Route =
-  | { name: "home" } | { name: "course" } | { name: "labs" } | { name: "glossary" } | { name: "today" } | { name: "gym" } | { name: "tracker" }
+  | { name: "home" } | { name: "course" } | { name: "labs" } | { name: "glossary" } | { name: "today"; day?: number } | { name: "gym" } | { name: "tracker"; tab?: string }
   | { name: "chapter"; n: number } | { name: "lesson"; n: number; l: number } | { name: "lab"; id: string } | { name: "missing"; hash: string };
 function parse(hash: string): Route {
   const h = hash.trim();
@@ -62,22 +62,25 @@ function parse(hash: string): Route {
   if (h === "labs") return { name: "labs" };
   if (h === "glossary") return { name: "glossary" };
   if (h === "today") return { name: "today" };
+  const td = h.match(/^today-(\d+)$/); if (td) return { name: "today", day: Number(td[1]) };
   if (h === "gym") return { name: "gym" };
   if (h === "tracker") return { name: "tracker" };
+  const tr = h.match(/^tracker-([a-z]+)$/); if (tr) return { name: "tracker", tab: tr[1] };
   let m = h.match(/^ch(\d+)$/); if (m) return { name: "chapter", n: Number(m[1]) };
   m = h.match(/^ch(\d+)-(\d+)$/); if (m) return { name: "lesson", n: Number(m[1]), l: Number(m[2]) };
   m = h.match(/^lab-([a-z0-9-]+)$/); if (m) return { name: "lab", id: m[1] };
   return { name: "missing", hash: h };
 }
-const NAV = [
-  { key: "home", label: "Home", href: "#home", icon: "home" as const },
-  { key: "today", label: "Today", href: "#today", icon: "home" as const },
-  { key: "course", label: "Course", href: "#course", icon: "list" as const },
-  { key: "gym", label: "Gym", href: "#gym", icon: "bolt" as const },
-  { key: "tracker", label: "Tracker", href: "#tracker", icon: "list" as const },
-  { key: "labs", label: "Labs", href: "#labs", icon: "flask" as const },
-  { key: "glossary", label: "Glossary", href: "#glossary", icon: "book" as const },
+const NAV: { key: string; label: string; href: string; icon: IconName; tab: boolean }[] = [
+  { key: "home", label: "Home", href: "#home", icon: "home", tab: true },
+  { key: "today", label: "Today", href: "#today", icon: "calendar", tab: true },
+  { key: "course", label: "Course", href: "#course", icon: "route", tab: true },
+  { key: "gym", label: "Gym", href: "#gym", icon: "timer", tab: true },
+  { key: "tracker", label: "Tracker", href: "#tracker", icon: "chart", tab: false },
+  { key: "labs", label: "Labs", href: "#labs", icon: "flask", tab: false },
+  { key: "glossary", label: "Glossary", href: "#glossary", icon: "book", tab: false },
 ];
+const MORE = NAV.filter((n) => !n.tab);
 function navKey(r: Route) {
   if (r.name === "chapter" || r.name === "course") return "course";
   if (r.name === "lab" || r.name === "labs") return "labs";
@@ -88,10 +91,12 @@ export default function Shell({ hash }: { hash: string }) {
   const route = useMemo(() => parse(hash), [hash]);
   const { theme, toggle } = useTheme();
   const [searchOpen, setSearchOpen] = useState(false);
+  const [moreOpen, setMoreOpen] = useState(false);
+  const closeMore = useCallback(() => setMoreOpen(false), []);
   const [scrolled, setScrolled] = useState(false);
   const reduce = useReducedMotion();
 
-  useEffect(() => { window.scrollTo(0, 0); setSearchOpen(false); }, [hash]);
+  useEffect(() => { window.scrollTo(0, 0); setSearchOpen(false); setMoreOpen(false); }, [hash]);
   useEffect(() => {
     const f = () => setScrolled(window.scrollY > 8);
     f(); addEventListener("scroll", f, { passive: true });
@@ -134,9 +139,9 @@ export default function Shell({ hash }: { hash: string }) {
     case "course": page = <CoursePage />; break;
     case "labs": page = <LabsPage />; break;
     case "glossary": page = <GlossaryPage />; break;
-    case "today": page = <TodayPage />; break;
+    case "today": page = <TodayPage day={route.day} />; break;
     case "gym": page = <GymPage />; break;
-    case "tracker": page = <TrackerPage />; break;
+    case "tracker": page = <TrackerPage tab={route.tab} />; break;
     case "chapter": page = <ChapterPage n={route.n} />; break;
     case "lab": page = <LabPage id={route.id} />; break;
     default: page = <NotFound />;
@@ -179,28 +184,52 @@ export default function Shell({ hash }: { hash: string }) {
       <footer className="foot">
         <span>CP 30</span>
         <span className="foot-sep" aria-hidden="true">·</span>
-        <span>CDN and media delivery, from zero to staff</span>
+        <span>Competitive programming in Python, in 30 days</span>
       </footer>
 
       <nav className="tabbar" aria-label="Main">
-        {NAV.map((n) => (
+        {NAV.filter((n) => n.tab).map((n) => (
           <a key={n.key} href={n.href} aria-current={active === n.key ? "page" : undefined}>
             <Icon name={n.icon} size={22} stroke={1.75} /><span>{n.label}</span>
           </a>
         ))}
+        <button type="button" className={MORE.some((n) => n.key === active) ? "on" : ""} aria-haspopup="dialog" aria-expanded={moreOpen} onClick={() => setMoreOpen(true)}>
+          <Icon name="more" size={22} stroke={1.75} /><span>{MORE.find((n) => n.key === active)?.label ?? "More"}</span>
+        </button>
       </nav>
+
+      <Sheet open={moreOpen} onClose={closeMore} label="More pages" width={420}>
+        <div className="more">
+          <div className="more-head"><span>More</span><button type="button" className="pal-close" onClick={closeMore}>Close</button></div>
+          {MORE.map((n) => (
+            <a key={n.key} href={n.href} className="more-item" aria-current={active === n.key ? "page" : undefined} onClick={closeMore}>
+              <span className="more-ico"><Icon name={n.icon} size={20} /></span>
+              <span className="more-t">{n.label}<small>{MORE_SUB[n.key]}</small></span>
+              <Icon name="chevron-right" size={18} stroke={2} />
+            </a>
+          ))}
+          <button type="button" className="more-item" onClick={toggle}>
+            <span className="more-ico"><Icon name={theme === "dark" ? "sun" : "moon"} size={20} /></span>
+            <span className="more-t">{theme === "dark" ? "Light mode" : "Dark mode"}<small>Change how the site looks</small></span>
+          </button>
+        </div>
+      </Sheet>
 
       <SearchPalette open={searchOpen} onClose={() => setSearchOpen(false)} />
     </div>
   );
 }
 
+const MORE_SUB: Record<string, string> = { tracker: "Progress table, daily log, mistakes, re-solves", labs: "Step-by-step algorithm players", glossary: "Every term in plain words" };
+
+/** Logo: a 30-day ring, three quarters done, around a code prompt. */
 function Logo() {
   return (
     <svg className="logo" width="28" height="28" viewBox="0 0 28 28" aria-hidden="true">
       <rect width="28" height="28" rx="8" className="logo-bg" />
-      <path d="M7 19.5c3.5-7 10.5-7 14 0" className="logo-arc" />
-      <circle cx="7" cy="19.5" r="2.2" className="logo-dot" /><circle cx="14" cy="11.4" r="2.2" className="logo-dot" /><circle cx="21" cy="19.5" r="2.2" className="logo-dot" />
+      <circle cx="14" cy="14" r="8.5" className="logo-track" />
+      <path d="M14 5.5a8.5 8.5 0 1 1 -8.5 8.5" className="logo-arc" />
+      <path d="M11.5 10.8l3.4 3.2-3.4 3.2" className="logo-mark" />
     </svg>
   );
 }
